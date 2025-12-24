@@ -1,0 +1,14 @@
+# Configuración de Base de Datos (Muy importante)
+db_config.php
+
+# Archivos de registro y temporales
+error_log
+*.log
+.DS_Store
+Thumbs.db
+
+# Carpeta de subidas (opcional, si no quieres subir las fotos de perfil de prueba)
+uploads/
+
+# Archivos de configuración del editor
+.vscode/
