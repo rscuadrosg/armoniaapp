@@ -2,6 +2,22 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.5.0] - 2025-12-24
+### Añadido
+- Filtros por recurso en el Dashboard (Midi y ProPresenter).
+- Estadísticas automáticas para enlaces externos vinculados.
+- Iconografía descriptiva (🎹 y 📺) en la lista de canciones.
+
+### Cambiado
+- Título visual de "Biblioteca Digital" a "Repertorio".
+- Migración de almacenamiento local a enlaces externos para MIDI y ProPresenter.
+- Layout del modal para agrupar links de recursos externos.
+
+### Corregido
+- Estandarización de la etiqueta "multitrack" en minúsculas.
+- Persistencia de los campos midi_path y propresenter_path en la base de datos.
+
+
 ## [1.4.0] - 2025-12-23
 ### Añadido
 - **Ordenamiento Dinámico**: Implementación de clics en encabezados de tabla (ID, Artista, Tono, Prioridad) para ordenar A-Z y Z-A.

@@ -2,10 +2,30 @@
 
 Este proyecto es un panel administrativo avanzado diseñado para gestionar una biblioteca de canciones, enfocándose en la velocidad de búsqueda, organización por prioridades y control de recursos multimedia.
 
-**Versión:** 1.4.0  
-**Última Actualización:** 2025-12-23  
 
----
+**Versión:** 1.5.0  
+**Última Actualización:** 2025-12-24 
+
+### 🚀 Nuevas Funcionalidades (v1.5.0)
+* **Gestión de Recursos Externos**: Transición total a enlaces externos (Drive, Web) para MIDI y ProPresenter.
+* **Dashboard de Auditoría Interactivo**: Tarjetas de estadísticas con filtros funcionales para archivos Midi y ProPresenter.
+* **Nomenclatura Actualizada**: El encabezado principal ahora es **"Repertorio"**.
+* **Estandarización**: La etiqueta "track" ahora se muestra siempre como **"multitrack"**.
+* **Nuevos Campos**: Integración de `midi_path` y `propresenter_path` (etiquetado como "ProPresenter file").
+
+### 📂 Estructura del Proyecto
+/
+├── db_config.php       # Configuración de conexión PDO.
+├── header.php          # Estilos globales y navegación.
+├── repertorio_lista.php # Interfaz principal, Dashboard y Modal.
+└── sql/
+    └── database.sql    # Esquema con soporte para midi_path y propresenter_path.
+
+ 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+**Versión:** 1.4.0  
+**Última Actualización:** 2025-12-23 
 
 ## 🚀 Funcionalidades Principales
 
