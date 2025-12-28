@@ -2,6 +2,41 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.7.0] - 2025-12-28
+### Añadido
+Módulo de Visualización de Servicio (view_event_musico.php):
+- Implementación de una vista optimizada para músicos que muestra el repertorio y el equipo asignado.
+- Integración de lógica de "Avatar por Defecto": genera un icono con la inicial del nombre si el usuario no tiene foto de perfil.
+-Visualización de instrumentos específicos por evento recuperados de la tabla event_assignments.
+
+Seguridad de Acceso:
+- Implementación de validación de rol admin en archivos sensibles (members.php, settings_band.php) para restringir el acceso a usuarios no autorizados.
+
+🔧 Corregido
+Mapeo de Base de Datos:
+- Se corrigió el error de tabla inexistente cambiando la referencia de users a la tabla correcta members.
+- Se actualizaron las consultas SQL para usar la columna full_name en lugar de name.
+- Se reparó la consulta de equipo para apuntar a la tabla de unión correcta: event_assignments.
+
+Flujo de Navegación en Dashboard:
+- Se corrigió el enlace del botón "Ver Resumen" en index.php que redirigía incorrectamente a la configuración del servicio para administradores.
+- Se eliminó el bucle de redirección en event_details.php que impedía a los administradores ver la vista de resumen del músico.
+
+Manejo de Sesiones:
+- Se añadió una comprobación de session_status() antes de session_start() para evitar el error Warning: session already started detectado en el header.
+
+### Cambiado
+Interfaz de Usuario (UI):
+- Actualización de la lista de miembros para usar tarjetas redondeadas (rounded-[2rem]) y tipografía black italic consistente con el resto del Dashboard.
+- Mejora en la visualización de canciones: ahora incluyen el tono (musical_key) resaltado en etiquetas de color azul.
+
+📊 Estado de la Estructura de Datos
+Tabla members: Activa. Columnas principales: id, full_name, email, role, profile_photo.
+Tabla event_assignments: Activa. Relaciona event_id con member_id e incluye la columna instrument.
+
+
+
+
 ## [1.5.0] - 2025-12-24
 ### Añadido
 - Filtros por recurso en el Dashboard (Midi y ProPresenter).

@@ -2,6 +2,44 @@
 
 Este proyecto es un panel administrativo avanzado diseñado para gestionar una biblioteca de canciones, enfocándose en la velocidad de búsqueda, organización por prioridades y control de recursos multimedia.
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Versión:** 1.7.0  
+**Última Actualización:** 2025-12-28 
+
+### 🚀 Nuevas Funcionalidades (v1.7.0)
+1. Correcciones de Base de Datos (SQL)
+Se identificaron y corrigieron errores de vinculación con la base de datos bsyhfyoq_armoniadb:
+Renombramiento de Tablas: Se migró la lógica de users a la tabla real members.
+Mapeo de Columnas: Se corrigió el uso de name por full_name y se integró la columna profile_photo para las imágenes de perfil.
+Tabla de Asignaciones: Se identificó que la tabla para vincular músicos con eventos es event_assignments, la cual contiene la columna clave instrument.
+
+2. Gestión de Equipo (members.php)
+Visualización Dinámica: Se implementó la lista de integrantes recuperando datos reales de la DB.
+Lógica de Imágenes: Se añadió un sistema de verificación que busca el archivo en uploads/profiles/. Si no existe o es NULL, genera automáticamente un avatar con la inicial del músico sobre un fondo negro estilizado.
+Seguridad: Se añadió un bloqueo para que solo usuarios con role = 'admin' puedan eliminar integrantes.
+
+3. Dashboard y Redirecciones (index.php)
+Corrección de Botones: Se separaron las funciones de los botones en la tarjeta de "Próximos Servicios":
+Botón Gris (Configurar): Exclusivo para Admins, lleva a event_setup.php.
+Botón Azul (Ver Resumen): Disponible para todos, ahora apunta correctamente a event_details.php con el parámetro view_event_musico.
+Solución de Bucle para Admin: Se eliminó la redirección forzada que enviaba al Admin a la edición cuando intentaba ver el resumen como músico.
+
+4. Vista de Resumen de Servicio (view_event_musico.php)
+Se reconstruyó totalmente la página para ser el centro de información del músico:
+Sección de Equipo: Ahora muestra a todos los músicos asignados al evento mediante un JOIN con la tabla event_assignments.
+Instrumentos Específicos: A diferencia del rol general, ahora se muestra qué instrumento tocará el músico en ese servicio específico (ej. Un bajista que ese día hace voces).
+Repertorio: Listado de canciones con tono (musical_key) y botón de acceso directo a YouTube.
+Estética: Diseño optimizado para móviles con tarjetas redondeadas (rounded-[2.5rem]) y sombras suaves.
+
+🚀 Próximos Pasos definidos:
+Sistema de Login: Implementar login.php y logout.php utilizando las credenciales de la tabla members.
+Seguridad de Sesiones: Reemplazar el selector manual de Admin/Músico del header por una sesión real basada en el login.
+Formulario de Alta: Ajustar add_member.php para que incluya la subida de fotos a la carpeta correcta.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 **Versión:** 1.6.0  
 **Última Actualización:** 2025-12-27 

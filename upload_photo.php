@@ -5,13 +5,13 @@ if (isset($_POST['upload']) && isset($_FILES['photo'])) {
     $member_id = $_POST['member_id'];
     $file = $_FILES['photo'];
     
-    // Validar extensión
+    // Validar extensi贸n
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $allowed = ['jpg', 'jpeg', 'png'];
     
     if (in_array(strtolower($ext), $allowed)) {
         $new_name = "profile_" . $member_id . "_" . time() . "." . $ext;
-        $path = "uploads/" . $new_name;
+        $path = "uploads/profile_pics/" . $new_name;
         
         if (move_uploaded_file($file['tmp_name'], $path)) {
             // Guardar en DB

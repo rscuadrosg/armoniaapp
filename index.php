@@ -1,32 +1,35 @@
 <?php
+session_start();
+
+// 1. LÓGICA DE ROLES (PROVISIONAL PARA PRUEBAS)
+if (isset($_GET['set_role'])) {
+    $_SESSION['user_role'] = $_GET['set_role'];
+}
+$currentRole = $_SESSION['user_role'] ?? 'musico';
+$isAdmin = ($currentRole === 'admin');
+
 require_once 'db_config.php';
 include 'header.php';
 
-// --- 1. MÉTRICAS GENERALES ---
+// --- 2. MÉTRICAS GENERALES ---
 $totalSongs = $pdo->query("SELECT COUNT(*) FROM songs")->fetchColumn();
 $noPdf = $pdo->query("SELECT COUNT(*) FROM songs WHERE has_lyrics IS NULL OR has_lyrics = '' OR has_lyrics = '0'")->fetchColumn();
-$noTrack = $pdo->query("SELECT COUNT(*) FROM songs WHERE has_multitrack = 0")->fetchColumn();
+$noMultitrack = $pdo->query("SELECT COUNT(*) FROM songs WHERE has_multitrack = 0")->fetchColumn();
 
-// --- 2. TOP 5 MÁS TOCADAS ---
+// --- 3. TOP 5 MÁS/MENOS TOCADAS ---
 $sqlMost = "SELECT s.title, COUNT(es.song_id) as total 
             FROM songs s
             JOIN event_songs es ON s.id = es.song_id
-            GROUP BY s.id 
-            ORDER BY total DESC 
-            LIMIT 5";
+            GROUP BY s.id ORDER BY total DESC LIMIT 5";
 $mostPlayed = $pdo->query($sqlMost)->fetchAll(PDO::FETCH_ASSOC);
 
-// --- 3. TOP 5 MENOS TOCADAS ---
 $sqlLeast = "SELECT s.title, COUNT(es.song_id) as total 
              FROM songs s
              LEFT JOIN event_songs es ON s.id = es.song_id
-             GROUP BY s.id 
-             ORDER BY total ASC 
-             LIMIT 5";
+             GROUP BY s.id ORDER BY total ASC LIMIT 5";
 $leastPlayed = $pdo->query($sqlLeast)->fetchAll(PDO::FETCH_ASSOC);
 
-// --- 4. OBTENER PRÓXIMOS SERVICIOS ---
-// Ajustado para obtener el setlist en la misma consulta o posterior si es necesario
+// --- 4. PRÓXIMOS SERVICIOS ---
 $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDATE() ORDER BY event_date ASC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -36,9 +39,11 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
             <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">DASHBOARD</h1>
             <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Gestión de Alabanza</p>
         </div>
+        <?php if ($isAdmin): ?>
         <a href="add_event.php" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(37,99,235,0.4)] hover:scale-105 transition-all">
             + Programar Servicio
         </a>
+        <?php endif; ?>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -55,8 +60,8 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
         </div>
 
         <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sin Multitracks</span>
-            <div class="text-5xl font-black text-indigo-500 my-2"><?php echo $noTrack; ?></div>
+            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sin multitracks</span>
+            <div class="text-5xl font-black text-indigo-500 my-2"><?php echo $noMultitrack; ?></div>
             <p class="text-[10px] font-bold text-slate-400 italic">Ejecución solo acústica</p>
         </div>
     </div>
@@ -75,11 +80,13 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
                 <?php foreach($proximosServicios as $evento): ?>
                 <div class="bg-white p-8 rounded-[3rem] shadow-2xl shadow-slate-200/40 border border-slate-50 relative group transition-all hover:border-blue-100">
                     
-                    <div class="absolute top-8 right-10 text-slate-100">
+                    <?php if ($isAdmin): ?>
+                    <a href="delete_event.php?id=<?php echo $evento['id']; ?>" class="absolute top-8 right-10 text-slate-100 hover:text-red-500 transition-colors" onclick="return confirm('¿Eliminar servicio?')">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                    </div>
+                    </a>
+                    <?php endif; ?>
 
                     <div class="flex items-center gap-5 mb-8">
                         <div class="bg-[#13192b] text-white w-[90px] h-[105px] rounded-[2.2rem] flex flex-col items-center justify-center shadow-xl shadow-slate-900/20">
@@ -99,12 +106,15 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
                     </div>
                     
                     <div class="flex gap-3">
+                        <?php if ($isAdmin): ?>
                         <a href="view_event.php?id=<?php echo $evento['id']; ?>" 
                            class="flex-1 bg-[#f8fafc] text-[#64748b] py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-center border border-slate-100 hover:bg-slate-100 transition-all">
                             Configurar
                         </a>
-                        <a href="view_event.php?id=<?php echo $evento['id']; ?>" 
-                           class="flex-1 bg-[#3b82f6] text-white py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-center shadow-[0_10px_20px_-5px_rgba(59,130,246,0.3)] hover:bg-blue-600 transition-all">
+                        <?php endif; ?>
+                        
+                        <a href="view_event_musico.php?id=<?php echo $evento['id']; ?>" 
+                           class="<?php echo $isAdmin ? 'flex-1' : 'w-full'; ?> bg-[#3b82f6] text-white py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-center shadow-[0_10px_20px_-5px_rgba(59,130,246,0.3)] hover:bg-blue-600 transition-all">
                             Ver Resumen
                         </a>
                     </div>
@@ -117,17 +127,26 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
             <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6 ml-4">Herramientas</h3>
             <div class="grid grid-cols-2 gap-4">
                 <a href="repertorio_lista.php" class="p-6 bg-slate-900 text-white rounded-[2rem] text-center hover:bg-blue-600 transition-all shadow-xl shadow-slate-200">
-                    <div class="text-2xl mb-2">🎵</div>
+                    <div class="text-2xl mb-2 italic">♫</div>
                     <span class="text-[9px] font-black uppercase tracking-widest">Repertorio</span>
                 </a>
-                <a href="equipo.php" class="p-6 bg-white border border-slate-100 rounded-[2rem] text-center hover:shadow-md transition-all">
-                    <div class="text-2xl mb-2">🎸</div>
+                
+                <?php if ($isAdmin): ?>
+                <a href="members.php" class="p-6 bg-white border border-slate-100 rounded-[2rem] text-center hover:shadow-md transition-all">
+                    <div class="text-2xl mb-2">&#127928;</div>
                     <span class="text-[9px] font-black uppercase text-slate-600 tracking-widest">Equipo</span>
                 </a>
+                
                 <a href="repertorio_borrar.php" class="p-6 bg-red-50 text-red-600 rounded-[2rem] text-center hover:bg-red-600 hover:text-white transition-all border border-red-100 col-span-2">
-                    <div class="text-2xl mb-2">⚙️</div>
+                    <div class="text-2xl mb-2">&#9881;</div>
                     <span class="text-[9px] font-black uppercase tracking-widest">Limpieza de Base de Datos</span>
                 </a>
+                <?php else: ?>
+                <div class="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-center opacity-40">
+                    <div class="text-2xl mb-2">&#128274;</div>
+                    <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">Restringido</span>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -138,7 +157,6 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
                 <span class="text-green-500 text-xl">🔥</span> Las Más Tocadas
             </h3>
             <div class="space-y-4">
-                <?php if(empty($mostPlayed)) echo '<p class="text-slate-300 text-xs italic">Aún no hay registros</p>'; ?>
                 <?php foreach($mostPlayed as $song): ?>
                 <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-green-100 transition-all">
                     <span class="font-bold text-slate-700 text-sm"><?php echo htmlspecialchars($song['title']); ?></span>
@@ -153,7 +171,6 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
                 <span class="text-blue-400 text-xl">❄️</span> En el olvido / Nuevas
             </h3>
             <div class="space-y-4">
-                <?php if(empty($leastPlayed)) echo '<p class="text-slate-300 text-xs italic">Aún no hay registros</p>'; ?>
                 <?php foreach($leastPlayed as $song): ?>
                 <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-blue-100 transition-all">
                     <span class="font-bold text-slate-700 text-sm"><?php echo htmlspecialchars($song['title']); ?></span>
@@ -164,6 +181,5 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
         </div>
     </div>
 </div>
-
 </body>
 </html>

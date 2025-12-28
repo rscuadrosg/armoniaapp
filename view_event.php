@@ -3,32 +3,31 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
 
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header("Location: events.php");
+// --- 1. CONFIGURACIÓN INICIAL ---
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$event_id = $_GET['id'] ?? null;
+if (!$event_id) {
+    echo "<script>window.location.href='events.php';</script>";
     exit;
 }
-$event_id = $_GET['id'];
 
-// --- 1. LÓGICA DE PROCESAMIENTO ---
-
-// Agregar/Actualizar Músico
-// --- 1. LÓGICA DE PROCESAMIENTO ---
+// --- 2. LÓGICA DE PROCESAMIENTO (Antes del Header para mayor limpieza) ---
 
 // Agregar/Actualizar Músico
 if (isset($_POST['add_member'])) {
     $m_id = $_POST['member_id'];
     $inst = $_POST['instrument'];
     
-    // Si el selector se pone en vacío, podrías querer borrar la asignación, 
-    // pero por ahora mantendremos tu lógica de insertar/actualizar.
     if (!empty($m_id)) {
         $stmt = $pdo->prepare("INSERT INTO event_assignments (event_id, member_id, instrument) 
                                VALUES (?, ?, ?) 
                                ON DUPLICATE KEY UPDATE member_id = VALUES(member_id)");
         $stmt->execute([$event_id, $m_id, $inst]);
     }
-    
-    header("Location: view_event.php?id=$event_id"); 
+    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
     exit;
 }
 
@@ -40,32 +39,49 @@ if (isset($_POST['add_song']) && !empty($_POST['song_id'])) {
         $stmt = $pdo->prepare("INSERT INTO event_songs (event_id, song_id) VALUES (?, ?)");
         $stmt->execute([$event_id, $_POST['song_id']]);
     }
-    header("Location: view_event.php?id=$event_id"); exit;
+    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    exit;
 }
 
 // Borrados
 if (isset($_GET['del_song'])) {
     $pdo->prepare("DELETE FROM event_songs WHERE event_id = ? AND song_id = ?")->execute([$event_id, $_GET['del_song']]);
-    header("Location: view_event.php?id=$event_id"); exit;
+    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    exit;
 }
 if (isset($_GET['del_assignment'])) {
     $pdo->prepare("DELETE FROM event_assignments WHERE id = ?")->execute([$_GET['del_assignment']]);
-    header("Location: view_event.php?id=$event_id"); exit;
+    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    exit;
 }
 
-// --- 2. CONSULTAS ---
+// --- 3. INCLUSIÓN DE INTERFAZ ---
+include 'header.php'; // Define $isAdmin [cite: 2025-12-21]
+
+// SEGURIDAD: Redirigir si no es admin (Usando JS para evitar error de cabeceras)
+if (!$isAdmin) {
+    echo "<script>window.location.href='view_event_musico.php?id=$event_id';</script>";
+    exit;
+}
+
+// --- 4. CONSULTAS PARA LA VISTA ---
 $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ?");
 $stmt->execute([$event_id]);
 $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$all_songs = $pdo->query("SELECT id, title FROM songs ORDER BY title ASC")->fetchAll(PDO::FETCH_ASSOC);
+$all_songs = $pdo->prepare("
+    SELECT id, title FROM songs 
+    WHERE id NOT IN (SELECT song_id FROM event_songs WHERE event_id = ?)
+    ORDER BY title ASC
+");
+$all_songs->execute([$event_id]);
+$all_songs = $all_songs->fetchAll();
 $all_members = $pdo->query("SELECT id, full_name FROM members ORDER BY full_name ASC")->fetchAll(PDO::FETCH_ASSOC);
 $template_roles = $pdo->query("SELECT * FROM band_roles ORDER BY sort_order ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $current_songs = $pdo->prepare("SELECT s.id, s.title, s.musical_key FROM songs s JOIN event_songs es ON s.id = es.song_id WHERE es.event_id = ?");
 $current_songs->execute([$event_id]);
 
-// Músicos asignados con su estado de confirmación
 $assigned_stmt = $pdo->prepare("
     SELECT ea.id as assign_id, ea.instrument, m.full_name, m.id as member_id, ec.status as confirmation_status
     FROM event_assignments ea 
@@ -78,24 +94,22 @@ $assignments = [];
 while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
     $assignments[$row['instrument']] = $row;
 }
-
-// Incluimos el Header Centralizado
-include 'header.php'; 
 ?>
 
 <div class="container mx-auto px-4 max-w-6xl pb-20">
-    <header class="mb-12">
+    <header class="mb-12 mt-10">
         <div class="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-xs font-black uppercase mb-4 tracking-widest">Panel Administrativo</div>
-        <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tighter leading-none mb-2"><?php echo htmlspecialchars($event['event_title']); ?></h1>
+        <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tighter leading-none mb-2">
+            <?php echo htmlspecialchars($event['description'] ?? ($event['event_title'] ?? 'Servicio')); ?>
+        </h1>
         <p class="text-xl text-slate-400 font-semibold"><?php echo date('d \d\e F, Y', strtotime($event['event_date'])); ?></p>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        
         <section>
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8">Setlist Musical</h2>
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8 italic uppercase">Setlist Musical</h2>
             <form method="POST" class="flex gap-3 mb-8 bg-white p-3 rounded-[2rem] shadow-sm border border-slate-100">
-                <select name="song_id" class="flex-1 bg-transparent px-4 font-bold text-slate-600 outline-none text-sm">
+                <select name="song_id" class="flex-1 bg-transparent px-4 font-bold text-slate-600 outline-none text-sm cursor-pointer">
                     <option value="">Buscar canción...</option>
                     <?php foreach($all_songs as $s): ?>
                         <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['title']); ?></option>
@@ -109,7 +123,7 @@ include 'header.php';
                     <div class="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm group">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-black text-[10px] uppercase"><?php echo $s['musical_key']; ?></div>
-                            <span class="font-bold text-slate-700 text-lg"><?php echo htmlspecialchars($s['title']); ?></span>
+                            <span class="font-bold text-slate-700 text-lg uppercase tracking-tight"><?php echo htmlspecialchars($s['title']); ?></span>
                         </div>
                         <a href="?id=<?php echo $event_id; ?>&del_song=<?php echo $s['id']; ?>" class="w-8 h-8 flex items-center justify-center text-slate-200 hover:text-red-500 rounded-full transition-all">✕</a>
                     </div>
@@ -118,13 +132,12 @@ include 'header.php';
         </section>
 
         <section>
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8">Equipo y Estados</h2>
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8 italic uppercase">Equipo y Estados</h2>
             <div class="space-y-4">
                 <?php foreach($template_roles as $role): 
                     $r_name = $role['role_name'];
                     $info = $assignments[$r_name] ?? null;
                     
-                    // Colores por estado
                     $dot_color = 'bg-slate-300'; 
                     $text_status = 'Pendiente';
                     if ($info) {
@@ -132,7 +145,7 @@ include 'header.php';
                         elseif ($info['confirmation_status'] == 'rechazado') { $dot_color = 'bg-red-500'; $text_status = 'No asiste'; }
                     }
                 ?>
-                    <div class="flex justify-between items-center p-4 <?php echo $info ? 'bg-white' : 'bg-slate-50 border-dashed'; ?> border border-slate-200 rounded-[2rem] relative group">
+                    <div class="flex justify-between items-center p-4 <?php echo $info ? 'bg-white shadow-sm' : 'bg-slate-50 border-dashed'; ?> border border-slate-200 rounded-[2rem] relative group transition-all">
                         
                         <?php if($info): ?>
                             <div class="absolute top-4 left-4 w-4 h-4 <?php echo $dot_color; ?> rounded-full border-4 border-white z-10 shadow-sm" title="<?php echo $text_status; ?>"></div>
@@ -153,15 +166,12 @@ include 'header.php';
                                 <span class="font-bold text-lg leading-tight <?php echo $info ? 'text-slate-800' : 'text-slate-300'; ?>">
                                     <?php echo $info ? htmlspecialchars($info['full_name']) : 'Vacante'; ?>
                                 </span>
-                                <?php if($info): ?>
-                                    <span class="text-[9px] font-black uppercase <?php echo str_replace('bg-', 'text-', $dot_color); ?> tracking-tighter">● <?php echo $text_status; ?></span>
-                                <?php endif; ?>
                             </div>
                         </div>
 
                         <form method="POST" class="flex gap-2">
                             <input type="hidden" name="instrument" value="<?php echo htmlspecialchars($r_name); ?>">
-                            <select name="member_id" onchange="this.form.submit()" class="text-[10px] font-bold p-2 rounded-xl border-none bg-slate-100 text-slate-500 outline-none">
+                            <select name="member_id" onchange="this.form.submit()" class="text-[10px] font-bold p-2 rounded-xl border-none bg-slate-100 text-slate-500 outline-none cursor-pointer">
                                 <option value="">Asignar...</option>
                                 <?php foreach($all_members as $m): ?>
                                     <option value="<?php echo $m['id']; ?>" <?php echo ($info && $info['member_id'] == $m['id']) ? 'selected' : ''; ?>>
@@ -175,23 +185,29 @@ include 'header.php';
                 <?php endforeach; ?>
             </div>
             
-            <div class="mt-8 p-6 bg-slate-900 rounded-[2.5rem] text-white shadow-xl shadow-slate-200">
+            <div class="mt-8 p-6 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl shadow-slate-300 border border-white/5">
                 <form method="POST" class="flex flex-col gap-3">
                     <div class="flex gap-2">
-                        <input type="text" name="instrument" placeholder="Instrumento Extra" class="flex-1 bg-white/10 p-3 rounded-xl text-xs border border-white/10 outline-none" required>
-                        <select name="member_id" class="flex-1 bg-white/10 p-3 rounded-xl text-xs border border-white/10 outline-none" required>
-                            <option value="">¿Quién?</option>
+                        <input type="text" name="instrument" placeholder="Instrumento Extra" class="flex-1 bg-white/10 p-4 rounded-xl text-xs border border-white/10 outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <select name="member_id" class="flex-1 bg-white/10 p-4 rounded-xl text-xs border border-white/10 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500" required>
+                            <option value="" class="text-slate-500">¿Quién?</option>
                             <?php foreach($all_members as $m): ?>
-                                <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['full_name']); ?></option>
+                                <option value="<?php echo $m['id']; ?>" style="color: #0f172a; background-color: white;">
+                                    <?php echo htmlspecialchars($m['full_name']); ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
-                        <button name="add_member" class="bg-blue-600 px-4 rounded-xl font-black text-[10px] uppercase">OK</button>
+                        <button name="add_member" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg shadow-blue-900/20">OK</button>
                     </div>
                 </form>
             </div>
         </section>
     </div>
 </div>
+
+<footer class="text-center py-10 text-slate-300 text-[10px] font-black uppercase tracking-[0.4em]">
+    ArmoníaApp • Panel de Control
+</footer>
 
 </body>
 </html>

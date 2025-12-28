@@ -3,10 +3,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
 
-// --- SIMULACIÓN DE LOGIN ---
+// --- SIMULACIÃ“N DE LOGIN ---
 $my_id = 1; 
 
-// 1. Obtener datos del perfil del músico
+// 1. Obtener datos del perfil del mÃºsico
 $stmt_me = $pdo->prepare("SELECT * FROM members WHERE id = ?");
 $stmt_me->execute([$my_id]);
 $user = $stmt_me->fetch(PDO::FETCH_ASSOC);
@@ -37,7 +37,7 @@ include 'header.php';
         <div class="relative group">
             <div class="w-32 h-32 rounded-[2.5rem] overflow-hidden bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-4xl font-black shadow-2xl border-4 border-white">
                 <?php if(!empty($user['profile_photo'])): ?>
-                    <img src="uploads/<?php echo $user['profile_photo']; ?>" class="w-full h-full object-cover">
+                    <img src="uploads/profile_pics/<?php echo $user['profile_photo']; ?>" class="w-full h-full object-cover">
                 <?php else: ?>
                     <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
                 <?php endif; ?>
@@ -45,7 +45,7 @@ include 'header.php';
             
             <form action="upload_photo.php" method="POST" enctype="multipart/form-data" class="absolute -bottom-2 -right-2">
                 <label class="bg-white w-10 h-10 rounded-xl shadow-lg flex items-center justify-center text-blue-600 hover:scale-110 transition cursor-pointer border border-slate-100">
-                    <span class="text-lg">📷</span>
+                    <span class="text-lg">ðŸ“·</span>
                     <input type="file" name="photo" class="hidden" onchange="this.form.submit()">
                     <input type="hidden" name="member_id" value="<?php echo $my_id; ?>">
                     <input type="hidden" name="upload" value="1">
@@ -61,7 +61,7 @@ include 'header.php';
             
             <div class="flex gap-3 mt-6 justify-center md:justify-start">
                 <div class="bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-                    <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Próximos</span>
+                    <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest">PrÃ³ximos</span>
                     <span class="text-lg font-black text-slate-700"><?php echo $my_events->rowCount(); ?> Servicios</span>
                 </div>
             </div>
@@ -73,7 +73,7 @@ include 'header.php';
     <div class="grid gap-4">
         <?php if($my_events->rowCount() == 0): ?>
             <div class="bg-white p-10 rounded-[2.5rem] text-center border-2 border-dashed border-slate-200">
-                <p class="text-slate-400 font-bold italic">No tienes servicios asignados próximamente.</p>
+                <p class="text-slate-400 font-bold italic">No tienes servicios asignados prÃ³ximamente.</p>
             </div>
         <?php endif; ?>
 
@@ -104,11 +104,11 @@ include 'header.php';
                     
                     <?php if($status == 'confirmado'): ?>
                         <div class="bg-green-50 text-green-600 px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-green-100">
-                            ✓ Confirmado
+                            âœ“ Confirmado
                         </div>
                     <?php elseif($status == 'rechazado'): ?>
                         <div class="bg-red-50 text-red-600 px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-red-100">
-                            No Asistiré
+                            No AsistirÃ©
                         </div>
                     <?php else: ?>
                         <a href="process_confirmation.php?event_id=<?php echo $ev['id']; ?>&member_id=<?php echo $my_id; ?>&status=rechazado" 
@@ -123,7 +123,7 @@ include 'header.php';
 
                     <a href="view_event_musico.php?id=<?php echo $ev['id']; ?>" 
                        class="bg-slate-900 text-white w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-blue-600 transition shadow-lg shadow-slate-200">
-                        🎵
+                        ðŸŽµ
                     </a>
                 </div>
             </div>
