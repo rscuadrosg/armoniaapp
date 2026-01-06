@@ -22,14 +22,26 @@ if ($isAdmin) {
 
         try {
             if (!empty($old_id)) {
-                $stmt = $pdo->prepare("UPDATE songs SET id=?, title=?, artist=?, musical_key=?, youtube_link=?, bpm=?, has_multitrack=?, has_lyrics=?, priority=?, midi_path=?, propresenter_path=? WHERE id=?");
-                $stmt->execute([$new_id, $_POST['title'], $_POST['artist'], $_POST['musical_key'], $_POST['youtube_link'], $_POST['bpm'], $has_multitrack, $_POST['has_lyrics'], $_POST['priority'], $_POST['midi_path'], $_POST['propresenter_path'], $old_id]);
+                $stmt = $pdo->prepare("UPDATE songs SET id=?, title=?, artist=?, musical_key=?, youtube_link=?, bpm=?, has_multitrack=?, has_lyrics=?, midi_path=?, propresenter_path=? WHERE id=?");
+                $stmt->execute([$new_id, $_POST['title'], $_POST['artist'], $_POST['musical_key'], $_POST['youtube_link'], $_POST['bpm'], $has_multitrack, $_POST['has_lyrics'], $_POST['midi_path'], $_POST['propresenter_path'], $old_id]);
+                
+                // Actualizar Etiquetas: Borrar anteriores e insertar nuevas
+                $pdo->prepare("DELETE FROM song_tags WHERE song_id = ?")->execute([$new_id]);
                 $message = "Actualizado con éxito.";
             } else {
-                $stmt = $pdo->prepare("INSERT INTO songs (id, title, artist, musical_key, youtube_link, bpm, has_multitrack, has_lyrics, priority, midi_path, propresenter_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$new_id, $_POST['title'], $_POST['artist'], $_POST['musical_key'], $_POST['youtube_link'], $_POST['bpm'], $has_multitrack, $_POST['has_lyrics'], $_POST['priority'], $_POST['midi_path'], $_POST['propresenter_path']]);
+                $stmt = $pdo->prepare("INSERT INTO songs (id, title, artist, musical_key, youtube_link, bpm, has_multitrack, has_lyrics, midi_path, propresenter_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$new_id, $_POST['title'], $_POST['artist'], $_POST['musical_key'], $_POST['youtube_link'], $_POST['bpm'], $has_multitrack, $_POST['has_lyrics'], $_POST['midi_path'], $_POST['propresenter_path']]);
                 $message = "Añadida con éxito.";
             }
+
+            // Insertar nuevas etiquetas seleccionadas
+            if (isset($_POST['tags']) && is_array($_POST['tags'])) {
+                $stmt_tag = $pdo->prepare("INSERT INTO song_tags (song_id, tag_id) VALUES (?, ?)");
+                foreach ($_POST['tags'] as $tag_id) {
+                    $stmt_tag->execute([$new_id, $tag_id]);
+                }
+            }
+
         } catch (PDOException $e) {
             $error = ($e->getCode() == 23000) ? "El ID ya existe." : "Error: " . $e->getMessage();
         }
@@ -43,56 +55,97 @@ $withMidis = $pdo->query("SELECT COUNT(*) FROM songs WHERE midi_path IS NOT NULL
 $withPro = $pdo->query("SELECT COUNT(*) FROM songs WHERE propresenter_path IS NOT NULL AND propresenter_path != ''")->fetchColumn();
 $noYoutube = $pdo->query("SELECT COUNT(*) FROM songs WHERE youtube_link IS NULL OR TRIM(youtube_link) = ''")->fetchColumn();
 $noLyrics = $pdo->query("SELECT COUNT(*) FROM songs WHERE has_lyrics IS NULL OR TRIM(has_lyrics) = ''")->fetchColumn();
-$priorityCounts = $pdo->query("SELECT priority, COUNT(*) as total FROM songs GROUP BY priority")->fetchAll(PDO::FETCH_ASSOC);
 
-$songs = $pdo->query("SELECT * FROM songs ORDER BY artist ASC, title ASC")->fetchAll(PDO::FETCH_ASSOC);
+// Obtener todas las etiquetas disponibles
+$all_tags = $pdo->query("SELECT * FROM tags ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+// Contar canciones por etiqueta
+$tagCounts = $pdo->query("SELECT t.id, t.name, t.color_class, COUNT(st.song_id) as total 
+                          FROM tags t 
+                          LEFT JOIN song_tags st ON t.id = st.tag_id 
+                          GROUP BY t.id")->fetchAll(PDO::FETCH_ASSOC);
+
+// Obtener canciones con sus etiquetas concatenadas
+$songs = $pdo->query("
+    SELECT s.*, GROUP_CONCAT(t.id) as tag_ids, GROUP_CONCAT(t.name SEPARATOR '||') as tag_names, GROUP_CONCAT(t.color_class SEPARATOR '||') as tag_colors
+    FROM songs s
+    LEFT JOIN song_tags st ON s.id = st.song_id
+    LEFT JOIN tags t ON st.tag_id = t.id
+    GROUP BY s.id
+    ORDER BY s.artist ASC, s.title ASC
+")->fetchAll(PDO::FETCH_ASSOC);
+
 include 'header.php'; 
 ?>
 
 <div class="container mx-auto px-4 max-w-7xl pb-20">
     
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8 text-center">
-        <div onclick="filterTable('all')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-blue-400 transition-all">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 text-center">
+        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
-            <h3 class="text-3xl font-black text-blue-600"><?php echo $totalSongs; ?></h3>
+            <h3 class="text-2xl font-black text-blue-600"><?php echo $totalSongs; ?></h3>
         </div>
-        <div onclick="filterTable('multitrack')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-green-400 transition-all">
+        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
             <p class="text-[10px] font-black text-green-500 uppercase tracking-widest">multitrack</p>
-            <h3 class="text-3xl font-black text-slate-800"><?php echo $withMultitracks; ?></h3>
+            <h3 class="text-2xl font-black text-slate-800"><?php echo $withMultitracks; ?></h3>
         </div>
-        <div onclick="filterTable('has-midi')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-indigo-400 transition-all">
+        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
             <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Midi</p>
-            <h3 class="text-3xl font-black text-slate-800"><?php echo $withMidis; ?></h3>
+            <h3 class="text-2xl font-black text-slate-800"><?php echo $withMidis; ?></h3>
         </div>
-        <div onclick="filterTable('has-pro')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-orange-400 transition-all">
+        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
             <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">propresenter lyrics</p>
-            <h3 class="text-3xl font-black text-slate-800"><?php echo $withPro; ?></h3>
+            <h3 class="text-2xl font-black text-slate-800"><?php echo $withPro; ?></h3>
         </div>
-        <div onclick="filterTable('no-yt')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border-l-4 border-red-500">
+        <div class="bg-white p-4 rounded-[2rem] shadow-sm border-l-4 border-red-500">
             <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">Sin Youtube</p>
-            <h3 class="text-3xl font-black text-slate-800"><?php echo $noYoutube; ?></h3>
+            <h3 class="text-2xl font-black text-slate-800"><?php echo $noYoutube; ?></h3>
         </div>
-        <div onclick="filterTable('no-pdf')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border-l-4 border-orange-500">
+        <div class="bg-white p-4 rounded-[2rem] shadow-sm border-l-4 border-orange-500">
             <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Sin PDF</p>
-            <h3 class="text-3xl font-black text-slate-800"><?php echo $noLyrics; ?></h3>
+            <h3 class="text-2xl font-black text-slate-800"><?php echo $noLyrics; ?></h3>
         </div>
-        <?php foreach ($priorityCounts as $pc): 
-            $pColor = ($pc['priority'] == 'High') ? 'text-red-500' : (($pc['priority'] == 'Medium') ? 'text-orange-500' : 'text-blue-400');
-        ?>
-        <div onclick="filterTable('<?php echo strtolower($pc['priority']); ?>')" class="cursor-pointer bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100">
-            <p class="text-[10px] font-black <?php echo $pColor; ?> uppercase tracking-widest"><?php echo $pc['priority']; ?></p>
-            <h3 class="text-3xl font-black text-slate-800"><?php echo $pc['total']; ?></h3>
-        </div>
-        <?php endforeach; ?>
     </div>
 
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 class="text-3xl font-black text-slate-800 uppercase tracking-tighter">Repertorio</h1>
-        <div class="flex gap-4">
-            <input type="text" id="songSearch" placeholder="Buscar..." class="p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 pr-10">
-            <?php if ($isAdmin): ?>
-                <button onclick="openModal()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-200">+ Nueva</button>
-            <?php endif; ?>
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mb-6">
+        <div class="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
+            <!-- Search -->
+            <div class="relative w-full md:w-1/2">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <input type="text" id="songSearch" placeholder="Buscar canción o artista..." class="w-full pl-10 p-3 bg-slate-50 border-none rounded-xl font-bold text-slate-600 outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Filters Group -->
+            <div class="flex gap-3 w-full md:w-auto">
+                <!-- Resource Filter -->
+                <select id="resourceFilter" class="w-full md:w-auto p-3 bg-slate-50 rounded-xl font-bold text-xs text-slate-600 outline-none cursor-pointer border-r-8 border-transparent">
+                    <option value="">Todos los Recursos</option>
+                    <option value="multitrack">Con Multitrack</option>
+                    <option value="has-midi">Con MIDI</option>
+                    <option value="has-pro">Con ProPresenter</option>
+                    <option value="no-yt">Falta YouTube</option>
+                    <option value="no-pdf">Falta PDF</option>
+                </select>
+                
+                <?php if ($isAdmin): ?>
+                    <button onclick="openModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all whitespace-nowrap">+ Nueva</button>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Multi-select Tags Row -->
+        <div>
+            <p class="text-[9px] font-black uppercase text-slate-300 mb-2 ml-1 tracking-widest">Filtrar por etiquetas (Selección múltiple)</p>
+            <div class="flex flex-wrap gap-2" id="tagFiltersContainer">
+                <?php foreach ($all_tags as $t): ?>
+                    <button type="button" 
+                            onclick="toggleTagFilter(this, '<?php echo $t['id']; ?>')" 
+                            class="tag-filter-btn px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:border-blue-300 transition-all bg-white"
+                            data-active-class="<?php echo $t['color_class']; ?>">
+                        <?php echo $t['name']; ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 
@@ -105,6 +158,7 @@ include 'header.php';
                     <th class="p-6 text-center">Tono</th>
                     <th class="p-6 text-center">multitrack</th>
                     <th class="p-6 text-center">Recursos</th>
+                    <th class="p-6 text-center">Etiquetas</th>
                     <?php if ($isAdmin): ?>
                         <th class="p-6 text-center">Acciones</th>
                     <?php endif; ?>
@@ -113,7 +167,7 @@ include 'header.php';
             <tbody class="divide-y divide-slate-50">
                 <?php foreach ($songs as $s): ?>
                 <tr class="song-row hover:bg-slate-50/50 transition-all group" 
-                    data-priority="<?php echo strtolower($s['priority']); ?>" 
+                    data-tags="<?php echo $s['tag_ids'] ? ',' . $s['tag_ids'] . ',' : ''; ?>"
                     data-multitrack="<?php echo $s['has_multitrack']; ?>"
                     data-midi="<?php echo !empty(trim($s['midi_path'] ?? '')) ? '1' : '0'; ?>"
                     data-pro="<?php echo !empty(trim($s['propresenter_path'] ?? '')) ? '1' : '0'; ?>"
@@ -137,6 +191,19 @@ include 'header.php';
                             <?php if(!empty($s['propresenter_path'])): ?><a href="<?php echo $s['propresenter_path']; ?>" target="_blank" title="propresenter lyrics">📺</a><?php endif; ?>
                             <?php if(!empty($s['has_lyrics'])): ?><a href="<?php echo $s['has_lyrics']; ?>" target="_blank">📄</a><?php endif; ?>
                             <?php if(!empty($s['youtube_link'])): ?><a href="<?php echo $s['youtube_link']; ?>" target="_blank">🎬</a><?php endif; ?>
+                        </div>
+                    </td>
+                    <td class="p-6 text-center">
+                        <div class="flex flex-wrap justify-center gap-1">
+                            <?php 
+                            if($s['tag_names']):
+                                $names = explode('||', $s['tag_names']);
+                                $colors = explode('||', $s['tag_colors']);
+                                for($i=0; $i<count($names); $i++): ?>
+                                    <span class="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border <?php echo $colors[$i] ?? 'bg-slate-100'; ?>">
+                                        <?php echo $names[$i]; ?>
+                                    </span>
+                            <?php endfor; endif; ?>
                         </div>
                     </td>
                     <?php if ($isAdmin): ?>
@@ -191,13 +258,16 @@ include 'header.php';
                         <label class="text-[10px] font-black uppercase text-slate-400">BPM</label>
                         <input type="number" name="bpm" id="m_bpm" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-center outline-none">
                     </div>
-                    <div class="col-span-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Prioridad</label>
-                        <select name="priority" id="m_priority" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-black text-[10px] uppercase outline-none">
-                            <option value="High">High</option>
-                            <option value="Medium" selected>Medium</option>
-                            <option value="Low">Low</option>
-                        </select>
+                    <div class="col-span-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 mb-2 block">Etiquetas</label>
+                        <div class="flex flex-wrap gap-2 bg-slate-50 p-4 rounded-2xl">
+                            <?php foreach($all_tags as $t): ?>
+                                <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:border-blue-300 transition-all">
+                                    <input type="checkbox" name="tags[]" value="<?php echo $t['id']; ?>" class="tag-checkbox w-4 h-4 accent-blue-600">
+                                    <span class="text-[10px] font-black uppercase <?php echo $t['color_class']; ?> bg-transparent border-none p-0"><?php echo $t['name']; ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                     <div class="flex items-center justify-center bg-slate-50 rounded-2xl p-2 gap-3">
                         <span class="text-[10px] font-black uppercase text-slate-400">multitrack</span>
@@ -213,27 +283,65 @@ include 'header.php';
 <?php endif; ?>
 
 <script>
-// Filtro de tabla
-function filterTable(type) {
+// Filtro Unificado
+let selectedTags = new Set();
+
+function toggleTagFilter(btn, id) {
+    const activeClass = btn.dataset.activeClass; // Clase de color guardada en data-attribute
+    
+    if (selectedTags.has(id)) {
+        selectedTags.delete(id);
+        // Desactivar estilo visual
+        btn.className = "tag-filter-btn px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-100 text-slate-400 hover:border-blue-300 transition-all bg-white";
+    } else {
+        selectedTags.add(id);
+        // Activar estilo visual (usando el color de la etiqueta)
+        btn.className = "tag-filter-btn px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-transparent transition-all ring-1 ring-offset-1 ring-slate-200 " + activeClass;
+    }
+    applyFilters();
+}
+
+function applyFilters() {
+    const searchText = document.getElementById('songSearch').value.toLowerCase();
+    const resourceValue = document.getElementById('resourceFilter').value;
+    
     const rows = document.querySelectorAll('.song-row');
+    
     rows.forEach(row => {
-        if (type === 'all') row.style.display = '';
-        else if (type === 'multitrack') row.style.display = row.dataset.multitrack === '1' ? '' : 'none';
-        else if (type === 'has-midi') row.style.display = row.dataset.midi === '1' ? '' : 'none';
-        else if (type === 'has-pro') row.style.display = row.dataset.pro === '1' ? '' : 'none';
-        else if (type === 'no-yt') row.style.display = row.dataset.yt === '0' ? '' : 'none';
-        else if (type === 'no-pdf') row.style.display = row.dataset.pdf === '0' ? '' : 'none';
-        else row.style.display = row.dataset.priority === type ? '' : 'none';
+        let show = true;
+        
+        // 1. Search Text
+        if (searchText && !row.innerText.toLowerCase().includes(searchText)) {
+            show = false;
+        }
+        
+        // 2. Tag Filter (Multi)
+        if (show && selectedTags.size > 0) {
+            // La canción debe tener TODAS las etiquetas seleccionadas (Lógica AND)
+            for (let tagId of selectedTags) {
+                if (!row.dataset.tags.includes(',' + tagId + ',')) {
+                    show = false;
+                    break;
+                }
+            }
+        }
+        
+        // 3. Resource Filter
+        if (show && resourceValue) {
+            if (resourceValue === 'multitrack' && row.dataset.multitrack !== '1') show = false;
+            else if (resourceValue === 'has-midi' && row.dataset.midi !== '1') show = false;
+            else if (resourceValue === 'has-pro' && row.dataset.pro !== '1') show = false;
+            else if (resourceValue === 'no-yt' && row.dataset.yt !== '0') show = false;
+            else if (resourceValue === 'no-pdf' && row.dataset.pdf !== '0') show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
     });
 }
 
-// Buscador
-document.getElementById('songSearch').addEventListener('keyup', function() {
-    let f = this.value.toLowerCase();
-    document.querySelectorAll('.song-row').forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(f) ? '' : 'none';
-    });
-});
+// Event Listeners
+document.getElementById('songSearch').addEventListener('keyup', applyFilters);
+document.getElementById('resourceFilter').addEventListener('change', applyFilters);
 
 <?php if ($isAdmin): ?>
 function openModal(song = null) {
@@ -249,8 +357,18 @@ function openModal(song = null) {
         document.getElementById('m_lyrics').value = song.has_lyrics;
         document.getElementById('m_midi').value = song.midi_path;
         document.getElementById('m_pro').value = song.propresenter_path;
-        document.getElementById('m_priority').value = song.priority;
         document.getElementById('m_multitrack').checked = (song.has_multitrack == 1);
+        
+        // Resetear y marcar checkboxes
+        document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+        if(song.tag_ids) {
+            let ids = song.tag_ids.split(',');
+            ids.forEach(id => {
+                let cb = document.querySelector(`.tag-checkbox[value="${id}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+        
         document.getElementById('modalTitle').innerText = "Editar Canción";
     } else {
         document.querySelector('#songModal form').reset();

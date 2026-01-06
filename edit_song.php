@@ -24,6 +24,12 @@ if (!$song) {
     die("Canción no encontrada.");
 }
 
+// Obtener etiquetas y etiquetas asignadas
+$all_tags = $pdo->query("SELECT * FROM tags ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$my_tags = $pdo->prepare("SELECT tag_id FROM song_tags WHERE song_id = ?");
+$my_tags->execute([$id]);
+$assigned_tags = $my_tags->fetchAll(PDO::FETCH_COLUMN);
+
 // 3. Procesar el formulario cuando se le da a "Guardar Cambios"
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "UPDATE songs SET 
@@ -31,8 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             artist = ?, 
             musical_key = ?, 
             bpm = ?, 
-            has_multitrack = ?, 
-            priority = ? 
+            has_multitrack = ?
             WHERE id = ?";
     
     $stmt = $pdo->prepare($sql);
@@ -42,9 +47,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_POST['musical_key'],
         $_POST['bpm'],
         isset($_POST['has_multitrack']) ? 1 : 0,
-        $_POST['priority'],
         $id
     ]);
+    
+    // Actualizar tags
+    $pdo->prepare("DELETE FROM song_tags WHERE song_id = ?")->execute([$id]);
+    if (isset($_POST['tags'])) {
+        $stmt_tag = $pdo->prepare("INSERT INTO song_tags (song_id, tag_id) VALUES (?, ?)");
+        foreach($_POST['tags'] as $tag_id) $stmt_tag->execute([$id, $tag_id]);
+    }
     
     // Regresar al listado principal
     header("Location: index.php");
@@ -99,12 +110,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Prioridad</label>
-                <select name="priority" class="w-full p-3 border rounded-xl bg-white outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="Low" <?php echo $song['priority'] == 'Low' ? 'selected' : ''; ?>>Baja</option>
-                    <option value="Medium" <?php echo $song['priority'] == 'Medium' ? 'selected' : ''; ?>>Media</option>
-                    <option value="High" <?php echo $song['priority'] == 'High' ? 'selected' : ''; ?>>Alta</option>
-                </select>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Etiquetas</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <?php foreach($all_tags as $t): ?>
+                        <label class="flex items-center gap-2 p-2 border rounded-lg bg-white">
+                            <input type="checkbox" name="tags[]" value="<?php echo $t['id']; ?>" <?php echo in_array($t['id'], $assigned_tags) ? 'checked' : ''; ?>>
+                            <span class="text-xs font-bold uppercase <?php echo $t['color_class']; ?> px-2 py-0.5 rounded"><?php echo $t['name']; ?></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
             </div>
 
             <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 shadow-lg transition duration-300">

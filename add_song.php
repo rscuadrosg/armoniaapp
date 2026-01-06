@@ -9,13 +9,23 @@ if (!$isAdmin) {
 
 $message = "";
 
+// Obtener etiquetas
+$tags = $pdo->query("SELECT * FROM tags ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $stmt = $pdo->prepare("INSERT INTO songs (title, artist, musical_key, bpm, has_multitrack, has_lyrics, priority) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO songs (title, artist, musical_key, bpm, has_multitrack, has_lyrics) VALUES (?, ?, ?, ?, ?, ?)");
     $success = $stmt->execute([
         $_POST['title'], $_POST['artist'], $_POST['musical_key'], 
         $_POST['bpm'], isset($_POST['has_multitrack']) ? 1 : 0, 
-        isset($_POST['has_lyrics']) ? 1 : 0, $_POST['priority']
+        isset($_POST['has_lyrics']) ? 1 : 0
     ]);
+    
+    $song_id = $pdo->lastInsertId();
+    if ($success && isset($_POST['tags'])) {
+        $stmt_tag = $pdo->prepare("INSERT INTO song_tags (song_id, tag_id) VALUES (?, ?)");
+        foreach($_POST['tags'] as $tag_id) $stmt_tag->execute([$song_id, $tag_id]);
+    }
+
     if ($success) header("Location: index.php");
 }
 ?>
@@ -43,11 +53,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="checkbox" name="has_multitrack" id="mt" class="w-5 h-5 text-blue-600">
                 <label for="mt" class="text-sm text-gray-700 font-medium">¿Tiene Multitrack / Secuencia?</label>
             </div>
-            <select name="priority" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-gray-700">
-                <option value="Low">Prioridad: Baja</option>
-                <option value="Medium" selected>Prioridad: Media</option>
-                <option value="High">Prioridad: Alta</option>
-            </select>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <?php foreach($tags as $t): ?>
+                    <label class="flex items-center gap-2 p-2 border rounded-lg bg-white">
+                        <input type="checkbox" name="tags[]" value="<?php echo $t['id']; ?>">
+                        <span class="text-xs font-bold uppercase <?php echo $t['color_class']; ?> px-2 py-0.5 rounded"><?php echo $t['name']; ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+
             <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 shadow-lg transition duration-300">
                 Guardar en Repertorio
             </button>

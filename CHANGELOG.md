@@ -2,6 +2,16 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.9.0] - 2026-01-06
+### Sistema de Etiquetas (Tags)
+- **Etiquetado Dinámico**: Se reemplazó el sistema rígido de Prioridades (Alta/Media/Baja) por un sistema de Etiquetas flexible y personalizable.
+- **Gestión de Etiquetas**: Nueva página `settings_tags.php` donde los administradores pueden crear, editar y colorear etiquetas personalizadas.
+- **Asignación Múltiple**: Capacidad de asignar múltiples etiquetas a una sola canción desde los formularios de creación y edición.
+
+### UI / UX
+- **Filtros Avanzados**: Rediseño de la barra de herramientas en `repertorio_lista.php` con sistema de "Chips" para filtrado múltiple (Lógica AND).
+- **Limpieza Visual**: Simplificación de los contadores superiores en el repertorio para reducir el ruido visual.
+
 ## [1.8.0] - 2026-01-06
 ### Seguridad y Arquitectura
 - **Estandarización de Autenticación**: Se implementó `auth.php` en todos los archivos críticos (`add_event.php`, `view_event.php`, `settings_band.php`) eliminando verificaciones de sesión manuales y redundantes.

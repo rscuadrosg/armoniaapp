@@ -24,9 +24,10 @@ if (!$event) {
 
 // 4. Obtener el Equipo y el Instrumento específico asignado
 $members_stmt = $pdo->prepare("
-    SELECT m.full_name, m.profile_photo, ea.instrument 
+    SELECT m.full_name, m.profile_photo, ea.instrument, ec.status 
     FROM members m
     JOIN event_assignments ea ON m.id = ea.member_id 
+    LEFT JOIN event_confirmations ec ON (ea.event_id = ec.event_id AND ea.member_id = ec.member_id)
     WHERE ea.event_id = ?
     ORDER BY ea.id ASC
 ");
@@ -69,7 +70,17 @@ include 'header.php';
         
         <div class="grid grid-cols-1 gap-3">
             <?php foreach($assigned_members as $m): ?>
-                <div class="flex items-center gap-4 bg-white p-3 rounded-3xl shadow-sm border border-slate-100 hover:border-blue-100 transition-all">
+                <?php 
+                    // Lógica de estado visual
+                    $status = $m['status'] ?? 'pendiente';
+                    $s_color = 'bg-slate-50 text-slate-300 border-slate-100';
+                    $s_icon = '?';
+                    
+                    if($status === 'confirmado') { $s_color = 'bg-green-50 text-green-600 border-green-100'; $s_icon = '✓'; }
+                    if($status === 'rechazado')  { $s_color = 'bg-red-50 text-red-500 border-red-100'; $s_icon = '✕'; }
+                ?>
+                <div class="flex items-center justify-between bg-white p-3 rounded-3xl shadow-sm border border-slate-100 hover:border-blue-100 transition-all">
+                    <div class="flex items-center gap-4">
                     <?php 
                     $foto_path = 'uploads/profile_pics/' . ($m['profile_photo'] ?? '');
                     if (!empty($m['profile_photo']) && file_exists($foto_path)): ?>
@@ -87,6 +98,11 @@ include 'header.php';
                         <p class="text-[9px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
                             <?php echo htmlspecialchars($m['instrument'] ?: 'Asignado'); ?>
                         </p>
+                    </div>
+                    </div>
+                    
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center border <?php echo $s_color; ?> font-black text-sm" title="<?php echo ucfirst($status); ?>">
+                        <?php echo $s_icon; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

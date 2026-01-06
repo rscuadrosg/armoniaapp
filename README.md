@@ -4,6 +4,20 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.9.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.9.0)
+1. Sistema de Etiquetas Dinámicas
+   - **Flexibilidad Total**: Se eliminó la restricción de prioridades fijas. Ahora puedes crear etiquetas personalizadas (ej: "Navidad", "Adoración", "Rápida").
+   - **Filtrado Multi-Criterio**: El buscador del repertorio permite activar múltiples filtros de etiquetas simultáneamente (ej. buscar canciones que sean "Adoración" Y "Navidad").
+   - **Gestión Visual**: Los administradores pueden asignar colores específicos a cada etiqueta para una rápida identificación.
+
+2. Mejoras en Interfaz
+   - **Barra de Herramientas Unificada**: Se consolidaron los filtros de búsqueda, recursos y etiquetas en una barra más limpia y funcional.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.8.0  
 **Última Actualización:** 2026-01-06 
 
