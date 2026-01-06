@@ -4,13 +4,17 @@ ini_set('display_errors', 1);
 require_once 'db_config.php';
 
 // --- 1. CONFIGURACIÓN INICIAL ---
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once 'auth.php';
 
 $event_id = $_GET['id'] ?? null;
 if (!$event_id) {
     echo "<script>window.location.href='events.php';</script>";
+    exit;
+}
+
+// SEGURIDAD: Redirigir si no es admin ANTES de procesar cualquier cambio
+if (!$isAdmin) {
+    echo "<script>window.location.href='view_event_musico.php?id=$event_id';</script>";
     exit;
 }
 
@@ -57,12 +61,6 @@ if (isset($_GET['del_assignment'])) {
 
 // --- 3. INCLUSIÓN DE INTERFAZ ---
 include 'header.php'; // Define $isAdmin [cite: 2025-12-21]
-
-// SEGURIDAD: Redirigir si no es admin (Usando JS para evitar error de cabeceras)
-if (!$isAdmin) {
-    echo "<script>window.location.href='view_event_musico.php?id=$event_id';</script>";
-    exit;
-}
 
 // --- 4. CONSULTAS PARA LA VISTA ---
 $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ?");

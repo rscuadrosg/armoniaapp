@@ -4,14 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once 'db_config.php';
-
-// 2. Iniciar sesión y validar admin ANTES de cargar cualquier otro archivo
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$currentRole = $_SESSION['user_role'] ?? 'musico';
-$isAdmin = ($currentRole === 'admin');
+require_once 'auth.php';
 
 if (!$isAdmin) {
     echo "<script>window.location.href='events.php';</script>";

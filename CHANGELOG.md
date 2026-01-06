@@ -2,6 +2,16 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.8.0] - 2026-01-06
+### Seguridad y Arquitectura
+- **Estandarización de Autenticación**: Se implementó `auth.php` en todos los archivos críticos (`add_event.php`, `view_event.php`, `settings_band.php`) eliminando verificaciones de sesión manuales y redundantes.
+- **Protección de Escritura**: Se corrigió una vulnerabilidad en `view_event.php` donde las solicitudes POST se procesaban antes de verificar los permisos de administrador. Ahora la verificación ocurre al inicio del script.
+- **Login Modular**: El sistema de roles ahora es completamente centralizado. Cualquier cambio futuro en la lógica de usuarios solo requerirá editar `auth.php`.
+
+### UI / UX
+- **Botón de Salida**: Se añadió un botón "SALIR" en el header para cerrar sesión de forma segura.
+- **Redirección Inteligente**: El login ahora redirige a los músicos directamente a su Dashboard personal y a los administradores al Panel General.
+
 ## [1.7.0] - 2025-12-28
 ### Añadido
 Módulo de Visualización de Servicio (view_event_musico.php):

@@ -3,10 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once 'auth.php';
 
 // 2. Validar ID del evento
 if (!isset($_GET['id']) || empty($_GET['id'])) {
@@ -55,7 +52,7 @@ include 'header.php';
             Resumen del Servicio
         </div>
         <h1 class="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-2 italic uppercase">
-            <?php echo htmlspecialchars($event['event_title']); ?>
+            <?php echo htmlspecialchars($event['description'] ?? 'Servicio'); ?>
         </h1>
         <p class="text-slate-400 font-bold uppercase text-xs tracking-widest">
             <?php echo date('d M, Y', strtotime($event['event_date'])); ?>

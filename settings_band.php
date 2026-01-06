@@ -3,15 +3,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
+require_once 'auth.php';
 
-// 2. Iniciar sesión de forma segura antes de cualquier salida
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 3. BLOQUEO DE SEGURIDAD: Solo Admin puede pasar de aquí
-$currentRole = $_SESSION['user_role'] ?? 'musico';
-if ($currentRole !== 'admin') {
+if (!$isAdmin) {
     // Si no es admin, lo mandamos al index por seguridad
     echo "<script>window.location.href='index.php';</script>";
     exit;

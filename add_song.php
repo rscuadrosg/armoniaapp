@@ -1,5 +1,12 @@
 <?php
 require_once 'db_config.php';
+require_once 'auth.php';
+
+if (!$isAdmin) {
+    header("Location: index.php");
+    exit;
+}
+
 $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

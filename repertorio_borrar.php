@@ -1,5 +1,11 @@
 <?php
 require_once 'db_config.php';
+require_once 'auth.php';
+
+if (!$isAdmin) {
+    header("Location: index.php");
+    exit;
+}
 
 if (isset($_GET['confirm_delete'])) {
     $stmt = $pdo->prepare("DELETE FROM songs WHERE id = ?");

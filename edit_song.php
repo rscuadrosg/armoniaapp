@@ -1,5 +1,11 @@
 <?php
 require_once 'db_config.php';
+require_once 'auth.php';
+
+if (!$isAdmin) {
+    header("Location: index.php");
+    exit;
+}
 
 // 1. Obtener el ID de la canción desde la URL
 if (!isset($_GET['id'])) {

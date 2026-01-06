@@ -3,10 +3,13 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
 
-// Iniciamos sesión para validar el rol antes de cargar el header
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once 'auth.php';
+
+// Solo admins pueden editar setlists
+if (!$isAdmin) {
+    header("Location: index.php");
+    exit;
+} 
 
 // Validar que tenemos un ID de evento (viniendo de id o event_id)
 $event_id = $_GET['id'] ?? $_GET['event_id'] ?? null;

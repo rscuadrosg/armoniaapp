@@ -2,14 +2,19 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
+require_once 'auth.php';
 
-// --- SIMULACIÃ“N DE LOGIN ---
-$my_id = 1; 
+$my_id = $currentUserId;
 
 // 1. Obtener datos del perfil del mÃºsico
 $stmt_me = $pdo->prepare("SELECT * FROM members WHERE id = ?");
 $stmt_me->execute([$my_id]);
 $user = $stmt_me->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    header("Location: logout.php");
+    exit;
+}
 
 // 2. OBTENER SERVICIOS (Consulta Corregida)
 $my_events = $pdo->prepare("

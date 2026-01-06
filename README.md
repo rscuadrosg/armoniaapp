@@ -4,6 +4,21 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.8.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.8.0)
+1. Seguridad y Arquitectura
+   - **Estandarización de Autenticación**: Se implementó `auth.php` en todos los archivos críticos (`add_event.php`, `view_event.php`, `settings_band.php`) eliminando verificaciones de sesión manuales.
+   - **Protección de Escritura**: Se corrigió una vulnerabilidad en `view_event.php` validando permisos de administrador antes de procesar solicitudes POST.
+   - **Login Modular**: El sistema de roles ahora es completamente centralizado en un único archivo de autenticación.
+
+2. UI / UX
+   - **Botón de Salida**: Se añadió un botón "SALIR" en el header para cerrar sesión de forma segura.
+   - **Redirección Inteligente**: El login ahora redirige a los músicos directamente a su Dashboard personal y a los administradores al Panel General.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.7.0  
 **Última Actualización:** 2025-12-28 
 

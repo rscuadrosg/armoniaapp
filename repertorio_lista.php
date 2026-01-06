@@ -1,15 +1,6 @@
 <?php
-session_start(); // Iniciamos sesión para recordar el rol elegido
-
-// 1. LÓGICA DE PRUEBA DE ROLES
-// Si no hay un rol definido, por defecto es 'musico'
-if (isset($_GET['set_role'])) {
-    $_SESSION['user_role'] = $_GET['set_role'];
-}
-$currentRole = $_SESSION['user_role'] ?? 'musico';
-$isAdmin = ($currentRole === 'admin');
-
 require_once 'db_config.php';
+require_once 'auth.php';
 
 $message = ""; 
 $error = "";
@@ -160,14 +151,6 @@ include 'header.php';
                 <?php endforeach; ?>
             </tbody>
         </table>
-    </div>
-</div>
-
-<div class="fixed bottom-6 right-6 bg-slate-900 text-white p-3 rounded-2xl shadow-2xl flex items-center gap-4 z-[100] border border-slate-700">
-    <span class="text-[10px] font-black uppercase tracking-widest pl-2">Modo Prueba:</span>
-    <div class="flex bg-slate-800 rounded-xl p-1">
-        <a href="?set_role=admin" class="px-4 py-2 rounded-lg text-[10px] font-black transition-all <?php echo $isAdmin ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'; ?>">ADMIN</a>
-        <a href="?set_role=musico" class="px-4 py-2 rounded-lg text-[10px] font-black transition-all <?php echo !$isAdmin ? 'bg-green-600 text-white' : 'text-slate-400 hover:text-white'; ?>">MÚSICO</a>
     </div>
 </div>
 

@@ -1,14 +1,6 @@
 <?php
-session_start();
-
-// 1. LÓGICA DE ROLES (PROVISIONAL PARA PRUEBAS)
-if (isset($_GET['set_role'])) {
-    $_SESSION['user_role'] = $_GET['set_role'];
-}
-$currentRole = $_SESSION['user_role'] ?? 'musico';
-$isAdmin = ($currentRole === 'admin');
-
 require_once 'db_config.php';
+require_once 'auth.php';
 include 'header.php';
 
 // --- 2. MÉTRICAS GENERALES ---
