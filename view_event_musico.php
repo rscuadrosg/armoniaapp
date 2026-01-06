@@ -126,7 +126,7 @@ include 'header.php';
                                 <?php echo htmlspecialchars($s['title']); ?>
                             </h3>
                             <div class="flex items-center gap-2">
-                                <span class="bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-lg">
+                                <span class="bg-blue-50 text-blue-600 font-black text-[10px] tracking-widest px-2 py-0.5 rounded-lg">
                                     Tono: <?php echo $s['musical_key']; ?>
                                 </span>
                             </div>

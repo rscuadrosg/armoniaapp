@@ -41,7 +41,7 @@ include 'header.php';
             
             <input type="text" name="title" placeholder="Título" class="md:col-span-2 p-3 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none" required>
             <input type="text" name="artist" placeholder="Artista" class="md:col-span-2 p-3 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none" required>
-            <input type="text" name="musical_key" placeholder="Tono" class="md:col-span-1 p-3 rounded-xl text-xs text-center font-black uppercase focus:ring-2 focus:ring-blue-500 outline-none" required>
+            <input type="text" name="musical_key" placeholder="Tono" class="md:col-span-1 p-3 rounded-xl text-xs text-center font-black focus:ring-2 focus:ring-blue-500 outline-none" required>
             <input type="number" name="bpm" placeholder="BPM" class="md:col-span-1 p-3 rounded-xl text-xs text-center font-bold focus:ring-2 focus:ring-blue-500 outline-none" required>
             
             <input type="url" name="has_lyrics" placeholder="Link PDF" class="md:col-span-1 p-3 rounded-xl text-[10px] focus:ring-2 focus:ring-blue-500 outline-none">

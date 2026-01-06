@@ -2,6 +2,16 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.10.0] - 2026-01-06
+### Gestión de Datos (Importar / Exportar)
+- **Importación Masiva**: Nuevo módulo `import_songs.php` para cargar canciones desde CSV. Soporta detección automática de etiquetas y asignación de ID manual.
+- **Copia de Seguridad**: Función de exportación completa (`export_songs.php`) que genera un CSV compatible con la plantilla de importación.
+- **Plantillas Inteligentes**: Generador de plantillas CSV (`download_template.php`) para facilitar la carga de datos sin errores de formato.
+
+### Mejoras en Repertorio
+- **Ordenamiento Interactivo**: Ahora es posible ordenar la tabla de canciones haciendo clic en los encabezados (ID, Artista, Tono).
+- **Notación Musical Precisa**: Se eliminó la transformación forzada a mayúsculas en el campo de Tono para respetar notaciones como "Cm" o "F#m".
+
 ## [1.9.0] - 2026-01-06
 ### Sistema de Etiquetas (Tags)
 - **Etiquetado Dinámico**: Se reemplazó el sistema rígido de Prioridades (Alta/Media/Baja) por un sistema de Etiquetas flexible y personalizable.

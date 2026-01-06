@@ -65,15 +65,35 @@ $tagCounts = $pdo->query("SELECT t.id, t.name, t.color_class, COUNT(st.song_id) 
                           LEFT JOIN song_tags st ON t.id = st.tag_id 
                           GROUP BY t.id")->fetchAll(PDO::FETCH_ASSOC);
 
-// Obtener canciones con sus etiquetas concatenadas
-$songs = $pdo->query("
+// --- LÓGICA DE ORDENAMIENTO ---
+$sort = $_GET['sort'] ?? 'artist';
+$order = $_GET['order'] ?? 'ASC';
+
+$valid_columns = ['id', 'title', 'artist', 'musical_key', 'bpm'];
+if (!in_array($sort, $valid_columns)) $sort = 'artist';
+$order = (strtoupper($order) === 'DESC') ? 'DESC' : 'ASC';
+
+// Helper para iconos de ordenamiento
+function getSortIcon($col, $current_sort, $current_order) {
+    if ($col !== $current_sort) return '<span class="text-slate-200 text-[9px] ml-1">▼</span>';
+    return ($current_order === 'ASC') 
+        ? '<span class="text-blue-600 text-[9px] ml-1">▲</span>' 
+        : '<span class="text-blue-600 text-[9px] ml-1">▼</span>';
+}
+
+// Obtener canciones con sus etiquetas concatenadas (QUERY DINÁMICA)
+$sql = "
     SELECT s.*, GROUP_CONCAT(t.id) as tag_ids, GROUP_CONCAT(t.name SEPARATOR '||') as tag_names, GROUP_CONCAT(t.color_class SEPARATOR '||') as tag_colors
     FROM songs s
     LEFT JOIN song_tags st ON s.id = st.song_id
     LEFT JOIN tags t ON st.tag_id = t.id
     GROUP BY s.id
-    ORDER BY s.artist ASC, s.title ASC
-")->fetchAll(PDO::FETCH_ASSOC);
+    ORDER BY s.$sort $order
+";
+// Orden secundario para estabilidad
+if ($sort !== 'title') $sql .= ", s.title ASC";
+
+$songs = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
 include 'header.php'; 
 ?>
@@ -128,6 +148,8 @@ include 'header.php';
                 </select>
                 
                 <?php if ($isAdmin): ?>
+                    <a href="export_songs.php" class="bg-slate-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-slate-400 hover:bg-slate-800 transition-all whitespace-nowrap flex items-center gap-2">⬇ Exportar</a>
+                    <a href="import_songs.php" class="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all whitespace-nowrap flex items-center gap-2">📂 Importar CSV</a>
                     <button onclick="openModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all whitespace-nowrap">+ Nueva</button>
                 <?php endif; ?>
             </div>
@@ -153,9 +175,23 @@ include 'header.php';
         <table class="w-full text-left" id="songsTable">
             <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                    <th class="p-6 text-center">ID</th>
-                    <th class="p-6">Artista / Canción</th>
-                    <th class="p-6 text-center">Tono</th>
+                    <th class="p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors" onclick="window.location='?sort=id&order=<?php echo ($sort=='id' && $order=='ASC')?'DESC':'ASC'; ?>'">
+                        <div class="flex items-center justify-center">ID <?php echo getSortIcon('id', $sort, $order); ?></div>
+                    </th>
+                    <th class="p-6">
+                        <div class="flex items-center gap-1">
+                            <a href="?sort=artist&order=<?php echo ($sort=='artist' && $order=='ASC')?'DESC':'ASC'; ?>" class="hover:text-blue-600 flex items-center">
+                                ARTISTA <?php echo getSortIcon('artist', $sort, $order); ?>
+                            </a>
+                            <span class="text-slate-300 mx-1">/</span>
+                            <a href="?sort=title&order=<?php echo ($sort=='title' && $order=='ASC')?'DESC':'ASC'; ?>" class="hover:text-blue-600 flex items-center">
+                                CANCIÓN <?php echo getSortIcon('title', $sort, $order); ?>
+                            </a>
+                        </div>
+                    </th>
+                    <th class="p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors" onclick="window.location='?sort=musical_key&order=<?php echo ($sort=='musical_key' && $order=='ASC')?'DESC':'ASC'; ?>'">
+                        <div class="flex items-center justify-center">TONO <?php echo getSortIcon('musical_key', $sort, $order); ?></div>
+                    </th>
                     <th class="p-6 text-center">multitrack</th>
                     <th class="p-6 text-center">Recursos</th>
                     <th class="p-6 text-center">Etiquetas</th>
@@ -179,7 +215,7 @@ include 'header.php';
                         <div class="text-[10px] text-blue-600 font-black uppercase mb-1"><?php echo htmlspecialchars($s['artist']); ?></div>
                         <div class="font-bold text-slate-800 text-sm"><?php echo htmlspecialchars($s['title']); ?></div>
                     </td>
-                    <td class="p-6 text-center font-black text-slate-700 uppercase"><?php echo $s['musical_key']; ?></td>
+                    <td class="p-6 text-center font-black text-slate-700"><?php echo $s['musical_key']; ?></td>
                     <td class="p-6 text-center">
                         <span class="text-[9px] font-black <?php echo $s['has_multitrack'] ? 'text-green-500' : 'text-slate-200'; ?>">
                             <?php echo $s['has_multitrack'] ? '● MULTITRACK' : 'NO'; ?>
@@ -252,7 +288,7 @@ include 'header.php';
                     </div>
                     <div class="col-span-1">
                         <label class="text-[10px] font-black uppercase text-slate-400">Tono</label>
-                        <input type="text" name="musical_key" id="m_key" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-black text-center uppercase outline-none">
+                        <input type="text" name="musical_key" id="m_key" class="w-full p-4 bg-slate-50 rounded-2xl border-none font-black text-center outline-none">
                     </div>
                     <div class="col-span-1">
                         <label class="text-[10px] font-black uppercase text-slate-400">BPM</label>

@@ -4,6 +4,20 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.10.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.10.0)
+1. Gestión Masiva de Datos
+   - **Importación/Exportación CSV**: Sistema completo para migrar datos. Permite subir inventarios existentes desde Excel y descargar copias de seguridad del repertorio actual.
+   - **Plantillas**: Descarga directa de archivos modelo para evitar errores al subir información.
+
+2. Experiencia de Usuario en Repertorio
+   - **Ordenamiento por Columnas**: Organización ágil del listado mediante clics en los encabezados de la tabla (ID, Título, Artista, Tono).
+   - **Soporte de Tonalidades**: Ajuste visual para permitir la distinción entre acordes mayores y menores (ej. C vs Cm).
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.9.0  
 **Última Actualización:** 2026-01-06 
 

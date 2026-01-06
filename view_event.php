@@ -120,7 +120,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                 <?php while($s = $current_songs->fetch()): ?>
                     <div class="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm group">
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-black text-[10px] uppercase"><?php echo $s['musical_key']; ?></div>
+                            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-black text-[10px]"><?php echo $s['musical_key']; ?></div>
                             <span class="font-bold text-slate-700 text-lg uppercase tracking-tight"><?php echo htmlspecialchars($s['title']); ?></span>
                         </div>
                         <a href="?id=<?php echo $event_id; ?>&del_song=<?php echo $s['id']; ?>" class="w-8 h-8 flex items-center justify-center text-slate-200 hover:text-red-500 rounded-full transition-all">✕</a>
