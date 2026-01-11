@@ -39,6 +39,7 @@ $isAdmin = ($currentRole === 'admin');
                     <a href="events.php" class="hover:text-blue-300">Servicios</a>
                     <a href="settings_band.php" class="hover:text-blue-300" title="Configuracion de Banda">Banda</a>
                     <a href="settings_tags.php" class="hover:text-blue-300" title="Gestionar Etiquetas">Etiquetas</a>
+                    <a href="generate_schedule.php" class="hover:text-blue-300 text-emerald-400" title="Generador Automático">Generador ✨</a>
                 <?php else: ?>
                     <a href="events.php" class="hover:text-blue-300">Servicios</a>
                 <?php endif; ?>

@@ -59,6 +59,69 @@ if (isset($_GET['del_assignment'])) {
     exit;
 }
 
+// --- GENERADOR AUTOMÁTICO (MAGIC FILL) ---
+if (isset($_POST['auto_generate_setlist'])) {
+    $selected_tag_ids = $_POST['tags_selected'] ?? [];
+    $tag_counts = $_POST['tag_counts'] ?? [];
+    
+    // Filtrar configuración
+    $config_tags = [];
+    foreach($selected_tag_ids as $tid) {
+        $qty = (int)($tag_counts[$tid] ?? 0);
+        if($qty > 0) $config_tags[$tid] = $qty;
+    }
+    
+    if (!empty($config_tags)) {
+        // 1. Limpiar canciones actuales
+        $pdo->prepare("DELETE FROM event_songs WHERE event_id = ?")->execute([$event_id]);
+        
+        // 2. Obtener Pool de canciones (Smart Shuffle Logic)
+        $inQuery = implode(',', array_fill(0, count($config_tags), '?'));
+        $params = array_keys($config_tags);
+        
+        $sql = "SELECT s.id, MAX(e.event_date) as last_played, GROUP_CONCAT(st.tag_id) as tag_ids 
+                FROM songs s 
+                JOIN song_tags st ON s.id = st.song_id
+                LEFT JOIN event_songs es ON s.id = es.song_id 
+                LEFT JOIN events e ON es.event_id = e.id 
+                WHERE st.tag_id IN ($inQuery)
+                GROUP BY s.id";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $raw_songs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Procesar en PHP para evitar duplicados y respetar cantidades
+        $current_event_song_ids = [];
+        $position = 1;
+        $stmt_ins = $pdo->prepare("INSERT INTO event_songs (event_id, song_id, position) VALUES (?, ?, ?)");
+        
+        foreach($config_tags as $tid => $qty) {
+            $candidates = [];
+            foreach($raw_songs as $r) {
+                $song_tags = explode(',', $r['tag_ids']);
+                if(in_array($tid, $song_tags) && !in_array($r['id'], $current_event_song_ids)) {
+                    $r['ts'] = $r['last_played'] ? strtotime($r['last_played']) : 0;
+                    $candidates[] = $r;
+                }
+            }
+            
+            shuffle($candidates);
+            usort($candidates, function($a, $b) { return $a['ts'] <=> $b['ts']; });
+            
+            for($k=0; $k<$qty; $k++) {
+                if(isset($candidates[$k])) {
+                    $stmt_ins->execute([$event_id, $candidates[$k]['id'], $position++]);
+                    $current_event_song_ids[] = $candidates[$k]['id'];
+                }
+            }
+        }
+    }
+    
+    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    exit;
+}
+
 // --- 3. INCLUSIÓN DE INTERFAZ ---
 include 'header.php'; // Define $isAdmin [cite: 2025-12-21]
 
@@ -79,6 +142,8 @@ $template_roles = $pdo->query("SELECT * FROM band_roles ORDER BY sort_order ASC"
 
 $current_songs = $pdo->prepare("SELECT s.id, s.title, s.musical_key FROM songs s JOIN event_songs es ON s.id = es.song_id WHERE es.event_id = ?");
 $current_songs->execute([$event_id]);
+
+$tags = $pdo->query("SELECT * FROM tags ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $assigned_stmt = $pdo->prepare("
     SELECT ea.id as assign_id, ea.instrument, m.full_name, m.id as member_id, ec.status as confirmation_status
@@ -105,7 +170,10 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <section>
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8 italic uppercase">Setlist Musical</h2>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight italic uppercase">Setlist Musical</h2>
+                <button onclick="document.getElementById('magicModal').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">✨ Auto-Generar</button>
+            </div>
             <form method="POST" class="flex gap-3 mb-8 bg-white p-3 rounded-[2rem] shadow-sm border border-slate-100">
                 <select name="song_id" class="flex-1 bg-transparent px-4 font-bold text-slate-600 outline-none text-sm cursor-pointer">
                     <option value="">Buscar canción...</option>
@@ -202,6 +270,44 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
         </section>
     </div>
 </div>
+
+<!-- Modal Generador Mágico -->
+<div id="magicModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl p-8">
+        <h3 class="text-2xl font-black text-slate-800 uppercase italic mb-2">Generador Automático</h3>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Reemplazará el setlist actual</p>
+        
+        <form method="POST">
+            <div class="mb-8">
+                <label class="text-[10px] font-black uppercase text-slate-400 mb-2 block tracking-widest">Estructura del Setlist</label>
+                <div class="grid grid-cols-1 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 max-h-60 overflow-y-auto">
+                    <?php foreach($tags as $t): ?>
+                        <div class="flex items-center justify-between p-2 border border-slate-200 rounded-xl bg-white">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" name="tags_selected[]" value="<?php echo $t['id']; ?>" class="w-4 h-4 accent-blue-600 rounded" onchange="toggleTagCount(this, <?php echo $t['id']; ?>)">
+                                <span class="text-[10px] font-black uppercase <?php echo $t['color_class']; ?> px-2 py-0.5 rounded"><?php echo $t['name']; ?></span>
+                            </label>
+                            <input type="number" name="tag_counts[<?php echo $t['id']; ?>]" id="count_<?php echo $t['id']; ?>" value="0" min="1" max="10" class="w-12 p-1 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none border border-slate-100 focus:border-blue-500 disabled:opacity-30" disabled>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="document.getElementById('magicModal').classList.add('hidden')" class="flex-1 py-4 rounded-2xl font-black uppercase text-xs text-slate-400 hover:bg-slate-50">Cancelar</button>
+                <button type="submit" name="auto_generate_setlist" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-200">Generar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleTagCount(cb, id) {
+    const input = document.getElementById('count_' + id);
+    input.disabled = !cb.checked;
+    if(cb.checked) { input.value = 1; input.focus(); } else { input.value = 0; }
+}
+</script>
 
 <footer class="text-center py-10 text-slate-300 text-[10px] font-black uppercase tracking-[0.4em]">
     ArmoníaApp • Panel de Control

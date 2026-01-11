@@ -2,6 +2,13 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.11.0] - 2026-01-06
+### Automatización e Inteligencia
+- **Generador de Temporadas**: Nuevo módulo `generate_schedule.php` unificado que permite planificar múltiples servicios recurrentes definiendo días, horarios y estructura del repertorio en un solo paso.
+- **Títulos Dinámicos**: Los eventos generados ahora incluyen automáticamente el día y la fecha en su nombre (ej: "Servicio Dom-01-feb-2026") para facilitar la identificación.
+- **Smart Shuffle (Rotación Inteligente)**: Algoritmo avanzado que asigna canciones basándose en etiquetas específicas (ej: 2 de Adoración, 1 de Alabanza) priorizando las menos tocadas para garantizar variedad.
+- **Magic Fill**: Nueva funcionalidad en la vista de evento (`view_event.php`) que permite auto-generar o reemplazar el setlist de un servicio específico usando la lógica de rotación inteligente.
+
 ## [1.10.0] - 2026-01-06
 ### Gestión de Datos (Importar / Exportar)
 - **Importación Masiva**: Nuevo módulo `import_songs.php` para cargar canciones desde CSV. Soporta detección automática de etiquetas y asignación de ID manual.

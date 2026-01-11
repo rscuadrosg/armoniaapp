@@ -4,6 +4,20 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.11.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.11.0)
+1. Automatización de Servicios
+   - **Generador de Calendario**: Herramienta "Wizard" unificada para crear temporadas completas de servicios.
+   - **Estructura Personalizable**: Define cuántas canciones de cada etiqueta (ej. Alabanza, Adoración) deben ir en cada servicio.
+   - **Nomenclatura Inteligente**: Los eventos se crean con fechas legibles en el título automáticamente.
+
+2. Gestión de Setlists
+   - **Auto-Generación (Magic Fill)**: Botón en la ficha del evento para llenar el repertorio automáticamente respetando la rotación de canciones.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.10.0  
 **Última Actualización:** 2026-01-06 
 
