@@ -2,6 +2,20 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.12.0] - 2026-01-06
+### UI / UX (Mobile First)
+- **Diseño Responsivo**: Reestructuración completa de las vistas principales (`index.php`, `repertorio_lista.php`, `events.php`) para optimizar la experiencia en dispositivos móviles.
+- **Menú Hamburguesa**: Nueva navegación colapsable en móviles para ahorrar espacio.
+- **Listas Compactas**: Se reemplazaron las tarjetas grandes por listas de alta densidad en el repertorio y eventos.
+- **Modales de Detalle**: En móviles, las canciones ahora abren una ficha de detalle (modal) optimizada.
+- **Botones de Acción**: Rediseño de los botones de herramientas en el Dashboard para mayor claridad y contraste.
+
+### Funcionalidad
+- **Gestión en Modales**: Creación de Eventos, Miembros y Roles directamente desde modales sin salir de la página.
+- **Drag & Drop**: Nueva funcionalidad en `settings_band.php` para reordenar los roles de la banda arrastrando y soltando.
+- **Historial de Eventos**: Filtro rápido en la página de servicios para alternar entre eventos futuros y pasados.
+- **Codificación UTF-8**: Solución definitiva a problemas de caracteres especiales en toda la aplicación.
+
 ## [1.11.0] - 2026-01-06
 ### Automatización e Inteligencia
 - **Generador de Temporadas**: Nuevo módulo `generate_schedule.php` unificado que permite planificar múltiples servicios recurrentes definiendo días, horarios y estructura del repertorio en un solo paso.

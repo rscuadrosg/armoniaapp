@@ -160,46 +160,46 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
 ?>
 
 <div class="container mx-auto px-4 max-w-6xl pb-20">
-    <header class="mb-12 mt-10">
-        <div class="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-xs font-black uppercase mb-4 tracking-widest">Panel Administrativo</div>
-        <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tighter leading-none mb-2">
+    <header class="mb-6 mt-6">
+        <div class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase mb-2 tracking-widest">Panel Administrativo</div>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none mb-1">
             <?php echo htmlspecialchars($event['description'] ?? ($event['event_title'] ?? 'Servicio')); ?>
         </h1>
-        <p class="text-xl text-slate-400 font-semibold"><?php echo date('d \d\e F, Y', strtotime($event['event_date'])); ?></p>
+        <p class="text-sm text-slate-400 font-bold uppercase tracking-widest"><?php echo date('d \d\e F, Y', strtotime($event['event_date'])); ?></p>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <section>
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight italic uppercase">Setlist Musical</h2>
-                <button onclick="document.getElementById('magicModal').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">✨ Auto-Generar</button>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Setlist Musical</h2>
+                <button onclick="document.getElementById('magicModal').classList.remove('hidden')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200">✨ Auto-Generar</button>
             </div>
-            <form method="POST" class="flex gap-3 mb-8 bg-white p-3 rounded-[2rem] shadow-sm border border-slate-100">
+            <form method="POST" class="flex gap-2 mb-4">
                 <select name="song_id" class="flex-1 bg-transparent px-4 font-bold text-slate-600 outline-none text-sm cursor-pointer">
                     <option value="">Buscar canción...</option>
                     <?php foreach($all_songs as $s): ?>
                         <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['title']); ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button name="add_song" class="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-black transition-all shadow-lg shadow-blue-100">+</button>
+                <button name="add_song" class="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all shadow-md shadow-blue-100">+</button>
             </form>
 
-            <div class="space-y-4">
+            <div class="space-y-2">
                 <?php while($s = $current_songs->fetch()): ?>
-                    <div class="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm group">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-sm transition-all">
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-black text-[10px]"><?php echo $s['musical_key']; ?></div>
-                            <span class="font-bold text-slate-700 text-lg uppercase tracking-tight"><?php echo htmlspecialchars($s['title']); ?></span>
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-blue-600 font-black text-[10px] border border-slate-100"><?php echo $s['musical_key']; ?></div>
+                            <span class="font-bold text-slate-700 text-sm uppercase tracking-tight"><?php echo htmlspecialchars($s['title']); ?></span>
                         </div>
-                        <a href="?id=<?php echo $event_id; ?>&del_song=<?php echo $s['id']; ?>" class="w-8 h-8 flex items-center justify-center text-slate-200 hover:text-red-500 rounded-full transition-all">✕</a>
+                        <a href="?id=<?php echo $event_id; ?>&del_song=<?php echo $s['id']; ?>" class="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-red-500 transition-all">✕</a>
                     </div>
                 <?php endwhile; ?>
             </div>
         </section>
 
-        <section>
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8 italic uppercase">Equipo y Estados</h2>
-            <div class="space-y-4">
+        <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Equipo y Estados</h2>
+            <div class="space-y-2">
                 <?php foreach($template_roles as $role): 
                     $r_name = $role['role_name'];
                     $info = $assignments[$r_name] ?? null;
@@ -211,14 +211,14 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                         elseif ($info['confirmation_status'] == 'rechazado') { $dot_color = 'bg-red-500'; $text_status = 'No asiste'; }
                     }
                 ?>
-                    <div class="flex justify-between items-center p-4 <?php echo $info ? 'bg-white shadow-sm' : 'bg-slate-50 border-dashed'; ?> border border-slate-200 rounded-[2rem] relative group transition-all">
+                    <div class="flex justify-between items-center p-3 <?php echo $info ? 'bg-slate-50' : 'bg-white border-dashed'; ?> border border-slate-200 rounded-xl relative group transition-all">
                         
                         <?php if($info): ?>
-                            <div class="absolute top-4 left-4 w-4 h-4 <?php echo $dot_color; ?> rounded-full border-4 border-white z-10 shadow-sm" title="<?php echo $text_status; ?>"></div>
+                            <div class="absolute top-2 left-2 w-3 h-3 <?php echo $dot_color; ?> rounded-full border-2 border-white z-10 shadow-sm" title="<?php echo $text_status; ?>"></div>
                         <?php endif; ?>
 
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-[1.4rem] flex items-center justify-center text-white font-black shadow-lg <?php echo $info ? 'bg-gradient-to-br from-blue-600 to-indigo-700 shadow-blue-100' : 'bg-slate-200 text-slate-400 shadow-none'; ?>">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-black shadow-sm <?php echo $info ? 'bg-gradient-to-br from-blue-600 to-indigo-700' : 'bg-slate-100 text-slate-300'; ?>">
                                 <?php 
                                 if ($info) {
                                     $words = explode(" ", $info['full_name']);
@@ -228,8 +228,8 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                             </div>
 
                             <div class="flex flex-col">
-                                <span class="text-[10px] font-black uppercase text-blue-500 tracking-widest mb-1"><?php echo htmlspecialchars($r_name); ?></span>
-                                <span class="font-bold text-lg leading-tight <?php echo $info ? 'text-slate-800' : 'text-slate-300'; ?>">
+                                <span class="text-[8px] font-black uppercase text-blue-500 tracking-widest mb-0.5"><?php echo htmlspecialchars($r_name); ?></span>
+                                <span class="font-bold text-sm leading-tight <?php echo $info ? 'text-slate-800' : 'text-slate-300'; ?>">
                                     <?php echo $info ? htmlspecialchars($info['full_name']) : 'Vacante'; ?>
                                 </span>
                             </div>
@@ -237,7 +237,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
 
                         <form method="POST" class="flex gap-2">
                             <input type="hidden" name="instrument" value="<?php echo htmlspecialchars($r_name); ?>">
-                            <select name="member_id" onchange="this.form.submit()" class="text-[10px] font-bold p-2 rounded-xl border-none bg-slate-100 text-slate-500 outline-none cursor-pointer">
+                            <select name="member_id" onchange="this.form.submit()" class="text-[10px] font-bold p-1.5 rounded-lg border-none bg-transparent text-slate-500 outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                                 <option value="">Asignar...</option>
                                 <?php foreach($all_members as $m): ?>
                                     <option value="<?php echo $m['id']; ?>" <?php echo ($info && $info['member_id'] == $m['id']) ? 'selected' : ''; ?>>
@@ -251,11 +251,11 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                 <?php endforeach; ?>
             </div>
             
-            <div class="mt-8 p-6 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl shadow-slate-300 border border-white/5">
+            <div class="mt-4 p-4 bg-slate-900 rounded-2xl text-white shadow-lg border border-white/5">
                 <form method="POST" class="flex flex-col gap-3">
                     <div class="flex gap-2">
-                        <input type="text" name="instrument" placeholder="Instrumento Extra" class="flex-1 bg-white/10 p-4 rounded-xl text-xs border border-white/10 outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <select name="member_id" class="flex-1 bg-white/10 p-4 rounded-xl text-xs border border-white/10 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500" required>
+                        <input type="text" name="instrument" placeholder="Instrumento Extra" class="flex-1 bg-white/10 p-3 rounded-xl text-xs border border-white/10 outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <select name="member_id" class="flex-1 bg-white/10 p-3 rounded-xl text-xs border border-white/10 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500" required>
                             <option value="" class="text-slate-500">¿Quién?</option>
                             <?php foreach($all_members as $m): ?>
                                 <option value="<?php echo $m['id']; ?>" style="color: #0f172a; background-color: white;">
@@ -263,7 +263,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <button name="add_member" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg shadow-blue-900/20">OK</button>
+                        <button name="add_member" class="bg-blue-600 hover:bg-blue-500 px-4 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg shadow-blue-900/20">OK</button>
                     </div>
                 </form>
             </div>
@@ -273,29 +273,29 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
 
 <!-- Modal Generador Mágico -->
 <div id="magicModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl p-8">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl p-6">
         <h3 class="text-2xl font-black text-slate-800 uppercase italic mb-2">Generador Automático</h3>
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Reemplazará el setlist actual</p>
         
         <form method="POST">
             <div class="mb-8">
                 <label class="text-[10px] font-black uppercase text-slate-400 mb-2 block tracking-widest">Estructura del Setlist</label>
-                <div class="grid grid-cols-1 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 max-h-60 overflow-y-auto">
+                <div class="grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 max-h-60 overflow-y-auto">
                     <?php foreach($tags as $t): ?>
-                        <div class="flex items-center justify-between p-2 border border-slate-200 rounded-xl bg-white">
+                        <div class="flex items-center justify-between p-2 border border-slate-200 rounded-lg bg-white">
                             <label class="flex items-center gap-2 cursor-pointer select-none">
                                 <input type="checkbox" name="tags_selected[]" value="<?php echo $t['id']; ?>" class="w-4 h-4 accent-blue-600 rounded" onchange="toggleTagCount(this, <?php echo $t['id']; ?>)">
                                 <span class="text-[10px] font-black uppercase <?php echo $t['color_class']; ?> px-2 py-0.5 rounded"><?php echo $t['name']; ?></span>
                             </label>
-                            <input type="number" name="tag_counts[<?php echo $t['id']; ?>]" id="count_<?php echo $t['id']; ?>" value="0" min="1" max="10" class="w-12 p-1 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none border border-slate-100 focus:border-blue-500 disabled:opacity-30" disabled>
+                            <input type="number" name="tag_counts[<?php echo $t['id']; ?>]" id="count_<?php echo $t['id']; ?>" value="0" min="1" max="10" class="w-12 p-1 bg-slate-50 rounded-md text-center font-bold text-xs outline-none border border-slate-100 focus:border-blue-500 disabled:opacity-30" disabled>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </div>
             
             <div class="flex gap-3">
-                <button type="button" onclick="document.getElementById('magicModal').classList.add('hidden')" class="flex-1 py-4 rounded-2xl font-black uppercase text-xs text-slate-400 hover:bg-slate-50">Cancelar</button>
-                <button type="submit" name="auto_generate_setlist" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-200">Generar</button>
+                <button type="button" onclick="document.getElementById('magicModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-black uppercase text-xs text-slate-400 hover:bg-slate-50">Cancelar</button>
+                <button type="submit" name="auto_generate_setlist" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-200">Generar</button>
             </div>
         </form>
     </div>

@@ -42,36 +42,36 @@ include 'header.php';
 ?>
 
 <div class="container mx-auto max-w-2xl p-4 pb-20">
-    <header class="mb-10 mt-6 flex justify-between items-center">
+    <header class="mb-6 mt-4 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">Gestión de Etiquetas</h1>
+            <h1 class="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Gestión de Etiquetas</h1>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Categorías dinámicas</p>
         </div>
-        <a href="repertorio_lista.php" class="bg-slate-100 text-slate-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200">Volver</a>
+        <a href="repertorio_lista.php" class="bg-slate-100 text-slate-500 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-200">Volver</a>
     </header>
 
-    <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100 mb-8">
+    <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-100 mb-6">
         <h2 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Nueva Etiqueta</h2>
         <form method="POST" class="flex flex-col md:flex-row gap-3">
-            <input type="text" name="name" placeholder="Nombre (Ej: Navidad)" required class="flex-1 p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" name="name" placeholder="Nombre (Ej: Navidad)" required class="flex-1 p-3 bg-slate-50 rounded-xl font-bold text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
             
-            <select name="color_class" class="flex-1 p-3 bg-slate-50 rounded-xl font-bold text-slate-600 outline-none cursor-pointer">
+            <select name="color_class" class="flex-1 p-3 bg-slate-50 rounded-xl font-bold text-sm text-slate-600 outline-none cursor-pointer">
                 <?php foreach($colors as $class => $name): ?>
                     <option value="<?php echo $class; ?>"><?php echo $name; ?></option>
                 <?php endforeach; ?>
             </select>
             
-            <button name="add_tag" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+            <button name="add_tag" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all shadow-md shadow-blue-200">
                 Crear
             </button>
         </form>
     </div>
 
-    <div class="grid gap-3">
+    <div class="grid gap-2">
         <?php foreach($tags as $t): ?>
-            <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
                 <div class="flex items-center gap-4">
-                    <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border <?php echo $t['color_class']; ?>">
+                    <span class="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border <?php echo $t['color_class']; ?>">
                         <?php echo htmlspecialchars($t['name']); ?>
                     </span>
                     <span class="text-xs font-bold text-slate-400">ID: <?php echo $t['id']; ?></span>

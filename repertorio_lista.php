@@ -100,59 +100,60 @@ include 'header.php';
 
 <div class="container mx-auto px-4 max-w-7xl pb-20">
     
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 text-center">
-        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
-            <h3 class="text-2xl font-black text-blue-600"><?php echo $totalSongs; ?></h3>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
+        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+            <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest truncate">Total</p>
+            <h3 class="text-lg font-black text-blue-600 leading-tight"><?php echo $totalSongs; ?></h3>
         </div>
-        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
-            <p class="text-[10px] font-black text-green-500 uppercase tracking-widest">multitrack</p>
-            <h3 class="text-2xl font-black text-slate-800"><?php echo $withMultitracks; ?></h3>
+        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+            <p class="text-[7px] font-black text-green-500 uppercase tracking-widest truncate">Multi</p>
+            <h3 class="text-lg font-black text-slate-800 leading-tight"><?php echo $withMultitracks; ?></h3>
         </div>
-        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
-            <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Midi</p>
-            <h3 class="text-2xl font-black text-slate-800"><?php echo $withMidis; ?></h3>
+        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+            <p class="text-[7px] font-black text-indigo-500 uppercase tracking-widest truncate">Midi</p>
+            <h3 class="text-lg font-black text-slate-800 leading-tight"><?php echo $withMidis; ?></h3>
         </div>
-        <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100">
-            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">propresenter lyrics</p>
-            <h3 class="text-2xl font-black text-slate-800"><?php echo $withPro; ?></h3>
+        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+            <p class="text-[7px] font-black text-orange-500 uppercase tracking-widest truncate">Pro</p>
+            <h3 class="text-lg font-black text-slate-800 leading-tight"><?php echo $withPro; ?></h3>
         </div>
-        <div class="bg-white p-4 rounded-[2rem] shadow-sm border-l-4 border-red-500">
-            <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">Sin Youtube</p>
-            <h3 class="text-2xl font-black text-slate-800"><?php echo $noYoutube; ?></h3>
+        <div class="bg-white p-2 rounded-xl shadow-sm border-l-2 border-red-500">
+            <p class="text-[7px] font-black text-red-500 uppercase tracking-widest truncate">No YT</p>
+            <h3 class="text-lg font-black text-slate-800 leading-tight"><?php echo $noYoutube; ?></h3>
         </div>
-        <div class="bg-white p-4 rounded-[2rem] shadow-sm border-l-4 border-orange-500">
-            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Sin PDF</p>
-            <h3 class="text-2xl font-black text-slate-800"><?php echo $noLyrics; ?></h3>
+        <div class="bg-white p-2 rounded-xl shadow-sm border-l-2 border-orange-500">
+            <p class="text-[7px] font-black text-orange-500 uppercase tracking-widest truncate">No PDF</p>
+            <h3 class="text-lg font-black text-slate-800 leading-tight"><?php echo $noLyrics; ?></h3>
         </div>
     </div>
 
     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mb-6">
-        <div class="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
+        <div class="flex flex-col gap-4 mb-4">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
             <!-- Search -->
-            <div class="relative w-full md:w-1/2">
+            <div class="relative w-full md:flex-1">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                 <input type="text" id="songSearch" placeholder="Buscar canción o artista..." class="w-full pl-10 p-3 bg-slate-50 border-none rounded-xl font-bold text-slate-600 outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <!-- Filters Group -->
-            <div class="flex gap-3 w-full md:w-auto">
-                <!-- Resource Filter -->
-                <select id="resourceFilter" class="w-full md:w-auto p-3 bg-slate-50 rounded-xl font-bold text-xs text-slate-600 outline-none cursor-pointer border-r-8 border-transparent">
-                    <option value="">Todos los Recursos</option>
-                    <option value="multitrack">Con Multitrack</option>
-                    <option value="has-midi">Con MIDI</option>
-                    <option value="has-pro">Con ProPresenter</option>
-                    <option value="no-yt">Falta YouTube</option>
-                    <option value="no-pdf">Falta PDF</option>
-                </select>
-                
-                <?php if ($isAdmin): ?>
-                    <a href="export_songs.php" class="bg-slate-700 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-slate-400 hover:bg-slate-800 transition-all whitespace-nowrap flex items-center gap-2">⬇ Exportar</a>
-                    <a href="import_songs.php" class="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all whitespace-nowrap flex items-center gap-2">📂 Importar CSV</a>
-                    <button onclick="openModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all whitespace-nowrap">+ Nueva</button>
-                <?php endif; ?>
+            <!-- Resource Filter -->
+            <select id="resourceFilter" class="w-full md:w-auto p-3 bg-slate-50 rounded-xl font-bold text-xs text-slate-600 outline-none cursor-pointer border-r-8 border-transparent flex-shrink-0">
+                <option value="">Todos los Recursos</option>
+                <option value="multitrack">Con Multitrack</option>
+                <option value="has-midi">Con MIDI</option>
+                <option value="has-pro">Con ProPresenter</option>
+                <option value="no-yt">Falta YouTube</option>
+                <option value="no-pdf">Falta PDF</option>
+            </select>
             </div>
+
+            <?php if ($isAdmin): ?>
+            <div class="flex flex-wrap gap-2 justify-end border-t border-slate-50 pt-4">
+                <a href="export_songs.php" class="flex-1 md:flex-none justify-center bg-slate-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md hover:bg-slate-800 transition-all whitespace-nowrap flex items-center gap-2 transform active:scale-95">⬇ Exportar</a>
+                <a href="import_songs.php" class="flex-1 md:flex-none justify-center bg-emerald-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md hover:bg-emerald-700 transition-all whitespace-nowrap flex items-center gap-2 transform active:scale-95">📂 Importar</a>
+                <button onclick="openModal()" class="flex-1 md:flex-none justify-center bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md hover:bg-blue-700 transition-all whitespace-nowrap transform active:scale-95">+ Nueva</button>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Multi-select Tags Row -->
@@ -171,8 +172,9 @@ include 'header.php';
         </div>
     </div>
 
-    <div class="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
-        <table class="w-full text-left" id="songsTable">
+    <!-- VISTA DE ESCRITORIO (Tabla) -->
+    <div class="hidden md:block bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
+        <table class="w-full text-left">
             <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-widest">
                     <th class="p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors" onclick="window.location='?sort=id&order=<?php echo ($sort=='id' && $order=='ASC')?'DESC':'ASC'; ?>'">
@@ -255,6 +257,117 @@ include 'header.php';
             </tbody>
         </table>
     </div>
+
+    <!-- VISTA MÓVIL (Lista Compacta) -->
+    <div class="md:hidden bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-50">
+        <?php foreach ($songs as $s): ?>
+        <div class="song-row p-2 hover:bg-slate-50 transition-colors cursor-pointer active:bg-blue-50"
+             onclick='openDetailModal(<?php echo json_encode($s); ?>)'
+             data-tags="<?php echo $s['tag_ids'] ? ',' . $s['tag_ids'] . ',' : ''; ?>"
+             data-multitrack="<?php echo $s['has_multitrack']; ?>"
+             data-midi="<?php echo !empty(trim($s['midi_path'] ?? '')) ? '1' : '0'; ?>"
+             data-pro="<?php echo !empty(trim($s['propresenter_path'] ?? '')) ? '1' : '0'; ?>"
+             data-yt="<?php echo !empty(trim($s['youtube_link'] ?? '')) ? '1' : '0'; ?>"
+             data-pdf="<?php echo !empty(trim($s['has_lyrics'] ?? '')) ? '1' : '0'; ?>">
+            
+            <div class="flex items-center justify-between gap-2">
+                <!-- ID Box (Left) -->
+                <div class="bg-slate-50 text-slate-400 w-8 h-8 rounded-lg flex flex-col items-center justify-center flex-shrink-0 border border-slate-200">
+                    <span class="text-[6px] font-black uppercase leading-none opacity-60">ID</span>
+                    <span class="text-[10px] font-black leading-none text-slate-600"><?php echo $s['id']; ?></span>
+                </div>
+                
+                <!-- Info (Middle) -->
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1">
+                        <h3 class="font-black text-slate-800 text-xs uppercase truncate leading-tight">
+                            <?php echo htmlspecialchars($s['title']); ?>
+                        </h3>
+                        <?php if($s['has_multitrack']): ?>
+                            <span class="w-1 h-1 rounded-full bg-green-500 flex-shrink-0" title="Multitrack Disponible"></span>
+                        <?php endif; ?>
+                    </div>
+                    <p class="text-[8px] text-blue-600 font-bold uppercase tracking-widest mt-0.5 truncate">
+                        <?php echo htmlspecialchars($s['artist']); ?>
+                    </p>
+                </div>
+
+                <!-- Key & BPM Boxes (Right) -->
+                <div class="flex gap-1 flex-shrink-0">
+                    <div class="bg-slate-50 text-slate-600 w-8 h-8 rounded-lg flex flex-col items-center justify-center border border-slate-200">
+                        <span class="text-[6px] font-black uppercase leading-none opacity-60">Key</span>
+                        <span class="text-[10px] font-black leading-none text-slate-800"><?php echo $s['musical_key']; ?></span>
+                    </div>
+                    <div class="bg-slate-50 text-slate-600 w-8 h-8 rounded-lg flex flex-col items-center justify-center border border-slate-200">
+                        <span class="text-[6px] font-black uppercase leading-none opacity-60">BPM</span>
+                        <span class="text-[10px] font-black leading-none text-slate-800"><?php echo $s['bpm'] ?: '-'; ?></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
+</div>
+
+<!-- Modal Detalle Canción (Móvil) -->
+<div id="viewSongModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+        
+        <!-- Header con Imagen/Gradiente -->
+        <div class="bg-slate-900 p-5 text-white relative overflow-hidden shrink-0">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full -mr-10 -mt-10 opacity-20 blur-2xl"></div>
+            
+            <div class="flex justify-between items-start relative z-10">
+                <div class="flex-1 mr-4 min-w-0">
+                    <h3 id="v_title" class="text-xl font-black uppercase italic tracking-tighter leading-tight mb-1 break-words">Título</h3>
+                    <p id="v_artist" class="text-blue-400 font-bold text-xs uppercase tracking-widest">Artista</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo Scrollable -->
+        <div class="p-5 overflow-y-auto space-y-5">
+            <!-- Grid Info -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
+                    <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest">ID</span>
+                    <span id="v_id" class="text-lg font-black text-slate-700">000</span>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
+                    <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest">Tono</span>
+                    <span id="v_key" class="text-lg font-black text-blue-600">C</span>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
+                    <span class="block text-[8px] font-black text-slate-400 uppercase tracking-widest">BPM</span>
+                    <span id="v_bpm" class="text-lg font-black text-slate-700">0</span>
+                </div>
+            </div>
+
+            <!-- Etiquetas -->
+            <div id="v_tags_container" class="flex flex-wrap gap-2"></div>
+
+            <!-- Recursos -->
+            <div>
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-1">Recursos</h4>
+                <div class="grid grid-cols-1 gap-3" id="v_resources">
+                    <!-- Botones generados por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-slate-100 bg-white shrink-0 flex flex-col gap-3">
+            <?php if ($isAdmin): ?>
+            <button id="btn_edit_song" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
+                Editar Canción
+            </button>
+            <?php endif; ?>
+            <button onclick="document.getElementById('viewSongModal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-500 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition-all">
+                Volver
+            </button>
+        </div>
+    </div>
 </div>
 
 <?php if ($isAdmin): ?>
@@ -320,6 +433,7 @@ include 'header.php';
 
 <script>
 // Filtro Unificado
+const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
 let selectedTags = new Set();
 
 function toggleTagFilter(btn, id) {
@@ -378,6 +492,60 @@ function applyFilters() {
 // Event Listeners
 document.getElementById('songSearch').addEventListener('keyup', applyFilters);
 document.getElementById('resourceFilter').addEventListener('change', applyFilters);
+
+// Modal de Detalle (Móvil)
+function openDetailModal(song) {
+    // Poblar datos básicos
+    document.getElementById('v_title').innerText = song.title;
+    document.getElementById('v_artist').innerText = song.artist;
+    document.getElementById('v_id').innerText = song.id;
+    document.getElementById('v_key').innerText = song.musical_key;
+    document.getElementById('v_bpm').innerText = song.bpm || '-';
+
+    // Poblar Etiquetas
+    const tagsContainer = document.getElementById('v_tags_container');
+    tagsContainer.innerHTML = '';
+    if (song.tag_names) {
+        const names = song.tag_names.split('||');
+        const colors = song.tag_colors ? song.tag_colors.split('||') : [];
+        names.forEach((name, i) => {
+            const span = document.createElement('span');
+            span.className = `px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${colors[i] || 'bg-slate-100'}`;
+            span.innerText = name;
+            tagsContainer.appendChild(span);
+        });
+    }
+
+    // Poblar Recursos
+    const resContainer = document.getElementById('v_resources');
+    resContainer.innerHTML = '';
+    
+    const resources = [
+        { type: 'youtube', url: song.youtube_link, label: 'Ver en YouTube', icon: '▶', color: 'bg-red-50 text-red-600 border-red-100' },
+        { type: 'pdf', url: song.has_lyrics, label: 'Abrir PDF / Letra', icon: '📄', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+        { type: 'midi', url: song.midi_path, label: 'Descargar MIDI', icon: '🎹', color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+        { type: 'pro', url: song.propresenter_path, label: 'ProPresenter File', icon: '📺', color: 'bg-orange-50 text-orange-600 border-orange-100' }
+    ];
+
+    resources.forEach(res => {
+        if (res.url && res.url.trim() !== '') {
+            const a = document.createElement('a');
+            a.href = res.url;
+            a.target = '_blank';
+            a.className = `flex items-center gap-3 p-3 rounded-xl border ${res.color} font-bold text-xs uppercase tracking-widest transition-transform active:scale-95`;
+            a.innerHTML = `<span class="text-lg">${res.icon}</span> ${res.label}`;
+            resContainer.appendChild(a);
+        }
+    });
+
+    // Configurar botón editar (si es admin)
+    if (isAdmin) {
+        const btnEdit = document.getElementById('btn_edit_song');
+        if(btnEdit) btnEdit.onclick = function() { openModal(song); };
+    }
+
+    document.getElementById('viewSongModal').classList.remove('hidden');
+}
 
 <?php if ($isAdmin): ?>
 function openModal(song = null) {

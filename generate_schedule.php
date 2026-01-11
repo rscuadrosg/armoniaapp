@@ -185,63 +185,63 @@ include 'header.php';
     <?php echo $message; ?>
 
     <?php if(empty($generated_events)): ?>
-    <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border border-slate-100">
-        <form method="POST" class="space-y-8">
+    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100">
+        <form method="POST" class="space-y-6">
             
             <!-- 1. Configuración Básica -->
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <h3 class="text-xs font-black uppercase text-blue-600 tracking-widest border-b border-blue-100 pb-2">1. Configuración General</h3>
                 <div>
                     <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Nombre Base del Evento</label>
-                    <input type="text" name="base_name" value="Servicio General" required class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="base_name" value="Servicio General" required class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Desde</label>
-                        <input type="date" name="start_date" value="<?php echo date('Y-m-d'); ?>" required class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none">
+                        <input type="date" name="start_date" value="<?php echo date('Y-m-d'); ?>" required class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none">
                     </div>
                     <div>
                         <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Hasta</label>
-                        <input type="date" name="end_date" value="<?php echo date('Y-m-d', strtotime('+3 months')); ?>" required class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none">
+                        <input type="date" name="end_date" value="<?php echo date('Y-m-d', strtotime('+3 months')); ?>" required class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none">
                     </div>
                 </div>
             </div>
 
             <!-- 2. Días y Horarios -->
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <h3 class="text-xs font-black uppercase text-blue-600 tracking-widest border-b border-blue-100 pb-2">2. Días y Horarios</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <?php foreach($days_labels as $idx => $label): ?>
-                    <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <input type="checkbox" name="days[]" value="<?php echo $idx; ?>" id="day_<?php echo $idx; ?>" class="w-5 h-5 accent-blue-600 cursor-pointer" onchange="toggleTimeInput(<?php echo $idx; ?>)">
                         <label for="day_<?php echo $idx; ?>" class="flex-1 font-bold text-slate-700 text-sm cursor-pointer select-none"><?php echo $label; ?></label>
-                        <input type="time" name="times[<?php echo $idx; ?>]" id="time_<?php echo $idx; ?>" value="09:00" disabled class="p-2 rounded-xl border border-slate-200 text-xs font-bold bg-white text-slate-500 disabled:opacity-50">
+                        <input type="time" name="times[<?php echo $idx; ?>]" id="time_<?php echo $idx; ?>" value="09:00" disabled class="p-2 rounded-lg border border-slate-200 text-xs font-bold bg-white text-slate-500 disabled:opacity-50">
                     </div>
                     <?php endforeach; ?>
                 </div>
             </div>
 
             <!-- 3. Repertorio -->
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <h3 class="text-xs font-black uppercase text-blue-600 tracking-widest border-b border-blue-100 pb-2">3. Repertorio</h3>
                 
                 <div>
                     <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Estructura del Servicio (Cantidad por Etiqueta)</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <?php foreach($tags as $t): ?>
-                            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white">
+                            <div class="flex items-center justify-between p-2 border border-slate-200 rounded-lg bg-white">
                                 <label class="flex items-center gap-2 cursor-pointer select-none">
                                     <input type="checkbox" name="tags_selected[]" value="<?php echo $t['id']; ?>" class="w-5 h-5 accent-blue-600 rounded-md" onchange="toggleTagCount(this, <?php echo $t['id']; ?>)">
                                     <span class="text-[10px] font-black uppercase <?php echo $t['color_class']; ?> px-2 py-1 rounded"><?php echo $t['name']; ?></span>
                                 </label>
-                                <input type="number" name="tag_counts[<?php echo $t['id']; ?>]" id="count_<?php echo $t['id']; ?>" value="0" min="1" max="10" class="w-16 p-2 bg-slate-50 rounded-lg text-center font-bold text-xs outline-none border border-slate-100 focus:border-blue-500 transition-all disabled:opacity-30 disabled:bg-slate-100" disabled>
+                                <input type="number" name="tag_counts[<?php echo $t['id']; ?>]" id="count_<?php echo $t['id']; ?>" value="0" min="1" max="10" class="w-12 p-1 bg-slate-50 rounded-md text-center font-bold text-xs outline-none border border-slate-100 focus:border-blue-500 transition-all disabled:opacity-30 disabled:bg-slate-100" disabled>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black uppercase tracking-widest shadow-2xl hover:bg-blue-600 transition-all transform hover:-translate-y-1 text-sm">
+            <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 transition-all transform hover:-translate-y-1 text-xs">
                 ✨ Generar Programación
             </button>
         </form>

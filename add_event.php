@@ -36,11 +36,11 @@ include 'header.php';
 ?>
 
 <div class="min-h-[70vh] flex items-center justify-center p-4">
-    <div class="bg-white p-10 md:p-14 rounded-[3.5rem] shadow-2xl shadow-slate-200 w-full max-w-lg border border-slate-100 relative overflow-hidden">
+    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-slate-200 w-full max-w-md border border-slate-100 relative overflow-hidden">
         
-        <header class="text-center mb-10">
-            <span class="bg-blue-100 text-blue-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Paso 1</span>
-            <h2 class="text-4xl font-black text-slate-900 mt-6 tracking-tighter italic uppercase">Nuevo <span class="text-blue-600">Servicio</span></h2>
+        <header class="text-center mb-6">
+            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-[0.2em]">Paso 1</span>
+            <h2 class="text-2xl font-black text-slate-900 mt-4 tracking-tighter italic uppercase">Nuevo <span class="text-blue-600">Servicio</span></h2>
         </header>
         
         <?php if(isset($error_db)): ?>
@@ -49,24 +49,27 @@ include 'header.php';
             </div>
         <?php endif; ?>
 
-        <form method="POST" class="space-y-6">
+        <form method="POST" class="space-y-4">
             <div>
                 <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Nombre del Evento</label>
                 <input type="text" name="description" placeholder="Ej: Servicio Dominical" required 
-                       class="w-full p-5 bg-slate-50 border-2 border-transparent rounded-[1.8rem] font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+                       class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
             </div>
 
             <div>
                 <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Fecha</label>
                 <input type="date" name="event_date" required 
-                       class="w-full p-5 bg-slate-50 border-2 border-transparent rounded-[1.8rem] font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+                       class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
             </div>
 
             <button type="submit" name="create_base_event" 
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-[1.8rem] shadow-xl shadow-blue-200 transition-all uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 group">
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-200 transition-all uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 group">
                 <span>Siguiente: Elegir Canciones</span>
                 <span class="group-hover:translate-x-1 transition-transform">→</span>
             </button>
+            <a href="index.php" class="block w-full text-center py-3 rounded-xl font-black uppercase text-[10px] text-slate-400 hover:bg-slate-50 transition-colors">
+                Cancelar
+            </a>
         </form>
     </div>
 </div>

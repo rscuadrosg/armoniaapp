@@ -3,6 +3,26 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'db_config.php';
 
+// --- 0. LÓGICA DE CREACIÓN RÁPIDA (Modal) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_base_event'])) {
+    $description = $_POST['description'] ?? '';
+    $event_date = $_POST['event_date'] ?? '';
+
+    if (!empty($description) && !empty($event_date)) {
+        try {
+            $stmt = $pdo->prepare("INSERT INTO events (event_date, description) VALUES (?, ?)");
+            $stmt->execute([$event_date, $description]);
+            $event_id = $pdo->lastInsertId();
+            
+            // Redirección al paso 2 (Canciones)
+            echo "<script>window.location.href='add_event_songs.php?id=$event_id';</script>";
+            exit;
+        } catch (Exception $e) {
+            $error_db = $e->getMessage();
+        }
+    }
+}
+
 // --- 1. LÓGICA DE ELIMINACIÓN (Antes de incluir el header para evitar conflictos) ---
 if (isset($_GET['delete_event'])) {
     $id_to_delete = $_GET['delete_event'];
@@ -32,89 +52,117 @@ if (isset($_GET['delete_event'])) {
 include 'header.php'; // Aquí se define $isAdmin y $currentRole
 ?>
 
-<main class="container mx-auto p-4 max-w-7xl pb-20">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 mt-10 gap-6">
-        <div>
-            <h2 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Próximos Servicios</h2>
-            <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">Calendario de Alabanza</p>
+<?php
+// Lógica de Historial vs Próximos
+$showHistory = isset($_GET['history']) && $_GET['history'] == '1';
+$whereClause = $showHistory ? "event_date < CURDATE()" : "event_date >= CURDATE()";
+$orderDirection = $showHistory ? "DESC" : "ASC"; // Historial: Más reciente primero. Próximos: Más cercano primero.
+$titleText = $showHistory ? "Historial de Servicios" : "Próximos Servicios";
+$subTitle = $showHistory ? "Eventos Pasados" : "Calendario Activo";
+
+$stmt = $pdo->query("SELECT id, description, event_date FROM events WHERE $whereClause ORDER BY event_date $orderDirection");
+?>
+
+<main class="container mx-auto p-4 max-w-5xl pb-20">
+    <!-- Header Compacto -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 mt-4 gap-4">
+        <div class="text-center md:text-left">
+            <h2 class="text-2xl font-black text-slate-900 tracking-tighter italic uppercase leading-none"><?php echo $titleText; ?></h2>
+            <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-1"><?php echo $subTitle; ?></p>
         </div>
         
-        <?php if ($isAdmin): ?>
-        <a href="add_event.php" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-200 transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-            </svg>
-            Programar Servicio
-        </a>
-        <?php endif; ?>
+        <div class="flex flex-wrap justify-center gap-2">
+            <a href="?history=<?php echo $showHistory ? '0' : '1'; ?>" class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl hover:shadow-md transition-all flex items-center gap-2 h-10 font-black text-[10px] uppercase tracking-widest">
+                <?php echo $showHistory ? 'Ver Próximos' : 'Ver Historial'; ?>
+            </a>
+
+            <?php if ($isAdmin): ?>
+            <button onclick="document.getElementById('addEventModal').classList.remove('hidden')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-black shadow-lg shadow-blue-200 transition-all flex items-center gap-2 text-[10px] uppercase tracking-widest h-10">
+                <span>+</span> Programar
+            </button>
+            <?php endif; ?>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php
-        $stmt = $pdo->query("SELECT id, description, event_date FROM events ORDER BY event_date ASC");
-        
-        if ($stmt->rowCount() == 0): ?>
-            <div class="col-span-full py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center">
-                <p class="text-slate-300 font-black uppercase text-xs tracking-widest">No hay servicios programados aún.</p>
-            </div>
-        <?php endif; ?>
-
-        <?php while ($row = $stmt->fetch()) : 
-            $fecha = strtotime($row['event_date']);
-            $dia = date('d', $fecha);
-            $mes = strtoupper(date('M', $fecha));
-            $año = date('Y', $fecha);
-            $esPasado = ($fecha < strtotime('today'));
-        ?>
-            <div class="bg-white p-2 rounded-[2.8rem] shadow-xl shadow-slate-200/40 border border-slate-50 relative group transition-all hover:shadow-2xl hover:-translate-y-1 <?php echo $esPasado ? 'opacity-60' : ''; ?>">
-                
-                <?php if ($isAdmin): ?>
-                <a href="?delete_event=<?php echo $row['id']; ?>" 
-                   onclick="return confirm('¿Eliminar este servicio y todas sus asignaciones?')" 
-                   class="absolute top-6 right-8 text-slate-100 hover:text-red-500 font-bold transition-all z-10 text-xl">
-                    ✕
-                </a>
-                <?php endif; ?>
-
-                <div class="p-6">
-                    <div class="flex items-center gap-6 mb-8">
-                        <div class="flex flex-col items-center justify-center bg-slate-900 text-white min-w-[85px] h-[100px] rounded-[2rem] shadow-lg shadow-slate-300">
-                            <span class="text-[10px] font-black uppercase tracking-widest opacity-40"><?php echo $mes; ?></span>
-                            <span class="text-4xl font-black leading-none my-1 italic"><?php echo $dia; ?></span>
-                            <span class="text-[9px] font-bold opacity-30"><?php echo $año; ?></span>
-                        </div>
-
-                        <div class="flex-1">
-                            <h3 class="text-xl font-black text-slate-800 uppercase leading-[1.1] tracking-tighter">
-                                <?php echo htmlspecialchars($row['description']); ?>
-                            </h3>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="w-2 h-2 rounded-full <?php echo $esPasado ? 'bg-slate-300' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'; ?>"></span>
-                                <p class="text-[9px] font-black uppercase tracking-[0.2em] <?php echo $esPasado ? 'text-slate-400' : 'text-blue-600'; ?>">
-                                    <?php echo $esPasado ? 'Finalizado' : 'Activo'; ?>
-                                </p>
-                            </div>
-                        </div>
+    <?php if ($stmt->rowCount() == 0): ?>
+        <div class="py-12 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 text-center">
+            <p class="text-slate-400 font-black uppercase text-xs tracking-widest">No hay eventos en esta lista.</p>
+        </div>
+    <?php else: ?>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-50">
+            <?php while ($row = $stmt->fetch()) : 
+                $fecha = strtotime($row['event_date']);
+                $dia = date('d', $fecha);
+                $mes = strtoupper(date('M', $fecha));
+                $año = date('Y', $fecha);
+            ?>
+            <div class="p-3 md:p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors group">
+                <div class="flex items-center gap-3 overflow-hidden flex-1">
+                    <div class="bg-slate-100 text-slate-600 w-10 h-10 md:w-12 md:h-12 rounded-xl flex flex-col items-center justify-center flex-shrink-0 border border-slate-200">
+                        <span class="text-[8px] md:text-[9px] font-black uppercase leading-none opacity-60"><?php echo $mes; ?></span>
+                        <span class="text-base md:text-lg font-black leading-none text-slate-800"><?php echo $dia; ?></span>
                     </div>
-
-                    <div class="grid <?php echo $isAdmin ? 'grid-cols-2' : 'grid-cols-1'; ?> gap-3">
-                        <?php if ($isAdmin): ?>
-                        <a href="view_event.php?id=<?php echo $row['id']; ?>" 
-                           class="flex items-center justify-center py-4 bg-slate-50 text-slate-500 rounded-2xl font-black text-[9px] uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-100">
-                            Configurar
-                        </a>
-                        <?php endif; ?>
-                        
-                        <a href="view_event_musico.php?id=<?php echo $row['id']; ?>" 
-                           class="flex items-center justify-center py-4 bg-blue-600 text-white rounded-2xl font-black text-[9px] uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">
-                            Ver Resumen
-                        </a>
+                    <div class="min-w-0 flex-1">
+                        <h3 class="font-black text-slate-800 text-xs md:text-sm uppercase leading-tight break-words">
+                            <?php echo htmlspecialchars($row['description']); ?>
+                        </h3>
+                        <p class="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                            <?php echo $año; ?>
+                        </p>
                     </div>
                 </div>
+
+                <div class="flex gap-2 flex-shrink-0">
+                    <?php if ($isAdmin): ?>
+                    <a href="view_event.php?id=<?php echo $row['id']; ?>" class="w-9 h-9 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all" title="Configurar">
+                        ⚙️
+                    </a>
+                    <?php endif; ?>
+                    
+                    <a href="view_event_musico.php?id=<?php echo $row['id']; ?>" class="w-9 h-9 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all" title="Ver Resumen">
+                        👁️
+                    </a>
+
+                    <?php if ($isAdmin): ?>
+                    <a href="?delete_event=<?php echo $row['id']; ?>" onclick="return confirm('¿Eliminar este servicio?')" class="w-9 h-9 flex items-center justify-center bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all" title="Eliminar">
+                        ✕
+                    </a>
+                    <?php endif; ?>
+                </div>
             </div>
-        <?php endwhile; ?>
-    </div>
+            <?php endwhile; ?>
+        </div>
+    <?php endif; ?>
 </main>
+
+<!-- Modal Nuevo Servicio -->
+<div id="addEventModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl p-6">
+        <header class="text-center mb-6">
+            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-[0.2em]">Paso 1</span>
+            <h2 class="text-2xl font-black text-slate-900 mt-4 tracking-tighter italic uppercase">Nuevo <span class="text-blue-600">Servicio</span></h2>
+        </header>
+        
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Nombre del Evento</label>
+                <input type="text" name="description" placeholder="Ej: Servicio Dominical" required 
+                       class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Fecha</label>
+                <input type="date" name="event_date" required 
+                       class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+            </div>
+
+            <button type="submit" name="create_base_event" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-200 transition-all uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 group">
+                <span>Siguiente: Elegir Canciones</span> <span class="group-hover:translate-x-1 transition-transform">→</span>
+            </button>
+            <button type="button" onclick="document.getElementById('addEventModal').classList.add('hidden')" class="w-full py-3 rounded-xl font-black uppercase text-[10px] text-slate-400 hover:bg-slate-50 transition-colors">Cancelar</button>
+        </form>
+    </div>
+</div>
 
 <?php 
 // --- LIMPIEZA DE ERRORES AL FINAL (Footer Seguro) ---

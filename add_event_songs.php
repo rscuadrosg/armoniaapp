@@ -51,17 +51,17 @@ $songs = $pdo->query("SELECT id, title, artist, musical_key FROM songs ORDER BY 
 include 'header.php'; // Aquí se define $isAdmin y el diseño del nav
 ?>
 
-<div class="container mx-auto px-4 max-w-2xl py-12">
-    <div class="mb-10 text-center">
-        <span class="bg-blue-100 text-blue-600 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Paso 2: Selección de Repertorio</span>
-        <h1 class="text-4xl font-black text-slate-900 tracking-tighter uppercase mt-4 italic">Planificar Setlist</h1>
+<div class="container mx-auto px-4 max-w-2xl py-6">
+    <div class="mb-6 text-center">
+        <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">Paso 2: Selección de Repertorio</span>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tighter uppercase mt-2 italic">Planificar Setlist</h1>
         <p class="text-slate-400 font-bold text-sm uppercase tracking-widest mt-2">
             Para: <span class="text-slate-800"><?php echo htmlspecialchars($info_evento['description'] ?? 'Evento'); ?></span>
         </p>
     </div>
 
-    <div class="relative mb-8">
-        <select id="songPicker" class="w-full p-5 bg-white border border-slate-200 rounded-[2rem] shadow-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 appearance-none cursor-pointer">
+    <div class="relative mb-6">
+        <select id="songPicker" class="w-full p-3 bg-white border border-slate-200 rounded-xl shadow-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 appearance-none cursor-pointer text-sm">
             <option value="">+ Agregar canción al setlist...</option>
             <?php foreach($songs as $s): ?>
                 <option value="<?php echo $s['id']; ?>" 
@@ -76,10 +76,10 @@ include 'header.php'; // Aquí se define $isAdmin y el diseño del nav
     </div>
 
     <form method="POST">
-        <div id="setlistContainer" class="space-y-3 mb-10">
+        <div id="setlistContainer" class="space-y-2 mb-8">
             </div>
 
-        <button type="submit" name="save_setlist" class="w-full bg-slate-900 text-white py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-blue-600 transition-all transform hover:-translate-y-1">
+        <button type="submit" name="save_setlist" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-lg hover:bg-blue-600 transition-all transform hover:-translate-y-1">
             Confirmar y Asignar Músicos
         </button>
     </form>
@@ -99,11 +99,11 @@ songPicker.addEventListener('change', function() {
     const key = option.getAttribute('data-key');
 
     const row = document.createElement('div');
-    row.className = "flex items-center justify-between p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300";
+    row.className = "flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300";
     row.innerHTML = `
         <input type="hidden" name="selected_songs[]" value="${id}">
         <div class="flex items-center gap-4">
-            <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-[10px] font-black">
+            <div class="w-6 h-6 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-[9px] font-black">
                 ${container.children.length + 1}
             </div>
             <div>

@@ -26,147 +26,136 @@ $proximosServicios = $pdo->query("SELECT * FROM events WHERE event_date >= CURDA
 ?>
 
 <div class="container mx-auto px-4 max-w-7xl pb-20">
-    <header class="py-10 flex justify-between items-center">
-        <div>
-            <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">DASHBOARD</h1>
+    <!-- Header Compacto -->
+    <header class="py-4 flex flex-col md:flex-row justify-between items-center gap-4 mb-2">
+        <div class="text-center md:text-left">
+            <h1 class="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter italic uppercase">DASHBOARD</h1>
             <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Gestión de Alabanza</p>
         </div>
-        <?php if ($isAdmin): ?>
-        <a href="add_event.php" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(37,99,235,0.4)] hover:scale-105 transition-all">
-            + Programar Servicio
-        </a>
-        <?php endif; ?>
+        
+        <div class="flex flex-wrap justify-center gap-2">
+            <a href="repertorio_lista.php" class="bg-slate-900 text-white px-4 py-2 rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-300 flex items-center gap-2 h-10 transform active:scale-95" title="Repertorio">
+                <span class="text-lg italic">♫</span>
+                <span class="text-[10px] font-black uppercase tracking-widest">Repertorio</span>
+            </a>
+            
+            <?php if ($isAdmin): ?>
+                <a href="members.php" class="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 h-10 transform active:scale-95" title="Equipo">
+                    <span class="text-lg">&#127928;</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Equipo</span>
+                </a>
+                
+                <a href="repertorio_borrar.php" class="bg-rose-600 text-white px-4 py-2 rounded-xl hover:bg-rose-700 transition-all shadow-lg shadow-rose-200 flex items-center gap-2 h-10 transform active:scale-95" title="Limpieza">
+                    <span class="text-lg">&#9881;</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Limpieza</span>
+                </a>
+
+                <div class="h-6 w-px bg-slate-200 mx-2 hidden md:block"></div>
+
+                <a href="add_event.php" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-2 h-10 transform active:scale-95">
+                    <span>+</span> <span>Programar</span>
+                </a>
+            <?php endif; ?>
+        </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div class="bg-blue-600 p-8 rounded-[2.5rem] text-white shadow-xl shadow-blue-100">
-            <span class="text-[10px] font-black uppercase opacity-80 tracking-widest">Total Repertorio</span>
-            <div class="text-6xl font-black my-2"><?php echo $totalSongs; ?></div>
-            <p class="text-[10px] font-bold uppercase tracking-tighter">Canciones en biblioteca</p>
-        </div>
-
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Faltan PDFs</span>
-            <div class="text-5xl font-black text-orange-500 my-2"><?php echo $noPdf; ?></div>
-            <p class="text-[10px] font-bold text-slate-400 italic">Pendientes de subir link</p>
-        </div>
-
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sin multitracks</span>
-            <div class="text-5xl font-black text-indigo-500 my-2"><?php echo $noMultitrack; ?></div>
-            <p class="text-[10px] font-bold text-slate-400 italic">Ejecución solo acústica</p>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+    <!-- 1. Próximos Servicios (Prioridad Alta) -->
+    <div class="mb-6">
+        <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-3 ml-1">Próximos Servicios</h3>
         
-        <div class="lg:col-span-8">
-            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6 ml-4">Próximos Servicios</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <?php if(empty($proximosServicios)): ?>
-                    <div class="md:col-span-2 p-10 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 text-center text-slate-400 text-xs font-bold">
-                        No hay servicios programados
-                    </div>
-                <?php endif; ?>
-
+        <?php if(empty($proximosServicios)): ?>
+            <div class="p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-center text-slate-400 text-xs font-bold">
+                No hay servicios programados
+            </div>
+        <?php else: ?>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-50">
                 <?php foreach($proximosServicios as $evento): ?>
-                <div class="bg-white p-8 rounded-[3rem] shadow-2xl shadow-slate-200/40 border border-slate-50 relative group transition-all hover:border-blue-100">
-                    
-                    <?php if ($isAdmin): ?>
-                    <a href="delete_event.php?id=<?php echo $evento['id']; ?>" class="absolute top-8 right-10 text-slate-100 hover:text-red-500 transition-colors" onclick="return confirm('¿Eliminar servicio?')">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </a>
-                    <?php endif; ?>
-
-                    <div class="flex items-center gap-5 mb-8">
-                        <div class="bg-[#13192b] text-white w-[90px] h-[105px] rounded-[2.2rem] flex flex-col items-center justify-center shadow-xl shadow-slate-900/20">
-                            <span class="text-[10px] font-black uppercase tracking-widest opacity-60"><?php echo date('M', strtotime($evento['event_date'])); ?></span>
-                            <span class="text-4xl font-black leading-none my-1"><?php echo date('d', strtotime($evento['event_date'])); ?></span>
-                            <span class="text-[9px] font-bold opacity-30"><?php echo date('Y', strtotime($evento['event_date'])); ?></span>
+                <div class="p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="bg-slate-100 text-slate-600 w-10 h-10 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
+                            <span class="text-[8px] font-black uppercase leading-none"><?php echo date('M', strtotime($evento['event_date'])); ?></span>
+                            <span class="text-sm font-black leading-none"><?php echo date('d', strtotime($evento['event_date'])); ?></span>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="font-black text-[#1e293b] uppercase text-lg leading-[1.1] tracking-tighter mb-1">
+                        <div class="min-w-0">
+                            <h4 class="font-black text-slate-800 text-xs uppercase truncate">
                                 <?php echo htmlspecialchars($evento['description']); ?>
                             </h4>
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
-                                <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Activo</p>
-                            </div>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                                <?php echo date('Y', strtotime($evento['event_date'])); ?> • Activo
+                            </p>
                         </div>
                     </div>
                     
-                    <div class="flex gap-3">
+                    <div class="flex gap-2 flex-shrink-0">
                         <?php if ($isAdmin): ?>
                         <a href="view_event.php?id=<?php echo $evento['id']; ?>" 
-                           class="flex-1 bg-[#f8fafc] text-[#64748b] py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-center border border-slate-100 hover:bg-slate-100 transition-all">
-                            Configurar
+                           class="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all" title="Configurar">
+                            ⚙️
                         </a>
                         <?php endif; ?>
                         
                         <a href="view_event_musico.php?id=<?php echo $evento['id']; ?>" 
-                           class="<?php echo $isAdmin ? 'flex-1' : 'w-full'; ?> bg-[#3b82f6] text-white py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-center shadow-[0_10px_20px_-5px_rgba(59,130,246,0.3)] hover:bg-blue-600 transition-all">
-                            Ver Resumen
+                           class="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all" title="Ver Resumen">
+                            👁️
                         </a>
+
+                        <?php if ($isAdmin): ?>
+                        <a href="delete_event.php?id=<?php echo $evento['id']; ?>" 
+                           class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all"
+                           onclick="return confirm('¿Eliminar servicio?')">
+                            ✕
+                        </a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- 2. Métricas Compactas (Fila única) -->
+    <div class="grid grid-cols-3 gap-3 mb-8">
+        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center">
+            <div class="text-xl font-black text-blue-600"><?php echo $totalSongs; ?></div>
+            <p class="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Canciones</p>
         </div>
 
-        <div class="lg:col-span-4">
-            <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-6 ml-4">Herramientas</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <a href="repertorio_lista.php" class="p-6 bg-slate-900 text-white rounded-[2rem] text-center hover:bg-blue-600 transition-all shadow-xl shadow-slate-200">
-                    <div class="text-2xl mb-2 italic">♫</div>
-                    <span class="text-[9px] font-black uppercase tracking-widest">Repertorio</span>
-                </a>
-                
-                <?php if ($isAdmin): ?>
-                <a href="members.php" class="p-6 bg-white border border-slate-100 rounded-[2rem] text-center hover:shadow-md transition-all">
-                    <div class="text-2xl mb-2">&#127928;</div>
-                    <span class="text-[9px] font-black uppercase text-slate-600 tracking-widest">Equipo</span>
-                </a>
-                
-                <a href="repertorio_borrar.php" class="p-6 bg-red-50 text-red-600 rounded-[2rem] text-center hover:bg-red-600 hover:text-white transition-all border border-red-100 col-span-2">
-                    <div class="text-2xl mb-2">&#9881;</div>
-                    <span class="text-[9px] font-black uppercase tracking-widest">Limpieza de Base de Datos</span>
-                </a>
-                <?php else: ?>
-                <div class="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] text-center opacity-40">
-                    <div class="text-2xl mb-2">&#128274;</div>
-                    <span class="text-[9px] font-black uppercase text-slate-400 tracking-widest">Restringido</span>
-                </div>
-                <?php endif; ?>
-            </div>
+        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center">
+            <div class="text-xl font-black text-orange-500"><?php echo $noPdf; ?></div>
+            <p class="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Sin PDF</p>
+        </div>
+
+        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center">
+            <div class="text-xl font-black text-indigo-500"><?php echo $noMultitrack; ?></div>
+            <p class="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">Acústicas</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50">
+    <!-- 4. Estadísticas (2 Columnas Compactas) -->
+    <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-50">
             <h3 class="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-8 flex items-center gap-3">
                 <span class="text-green-500 text-xl">🔥</span> Las Más Tocadas
             </h3>
             <div class="space-y-4">
                 <?php foreach($mostPlayed as $song): ?>
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-green-100 transition-all">
-                    <span class="font-bold text-slate-700 text-sm"><?php echo htmlspecialchars($song['title']); ?></span>
-                    <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-[10px] font-black"><?php echo $song['total']; ?> Veces</span>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-slate-700 truncate mr-2"><?php echo htmlspecialchars($song['title']); ?></span>
+                    <span class="bg-green-50 text-green-600 px-2 py-0.5 rounded-md font-black text-[9px] whitespace-nowrap"><?php echo $song['total']; ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>
         </div>
 
-        <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-50">
             <h3 class="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-8 flex items-center gap-3">
                 <span class="text-blue-400 text-xl">❄️</span> En el olvido / Nuevas
             </h3>
             <div class="space-y-4">
                 <?php foreach($leastPlayed as $song): ?>
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-blue-100 transition-all">
-                    <span class="font-bold text-slate-700 text-sm"><?php echo htmlspecialchars($song['title']); ?></span>
-                    <span class="bg-slate-200 text-slate-500 px-4 py-1 rounded-full text-[10px] font-black"><?php echo $song['total']; ?> Veces</span>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-slate-700 truncate mr-2"><?php echo htmlspecialchars($song['title']); ?></span>
+                    <span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-black text-[9px] whitespace-nowrap"><?php echo $song['total']; ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>

@@ -4,7 +4,22 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-**Versión:** 1.11.0  
+**Versión:** 1.12.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.12.0)
+1. Experiencia Móvil (Mobile First)
+   - **Interfaz Compacta**: Rediseño total para celulares, priorizando la densidad de información y la facilidad de uso táctil.
+   - **Navegación Optimizada**: Menú hamburguesa y botones de acción rápida accesibles.
+   - **Fichas de Detalle**: Visualización de canciones y eventos en modales emergentes.
+
+2. Mejoras de Flujo
+   - **Gestión sin Recargas**: Creación de entidades (Eventos, Miembros) mediante ventanas modales.
+   - **Ordenamiento Visual**: Capacidad de reordenar la estructura de la banda arrastrando los elementos.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+e que me ay**Versión:** 1.11.0  
 **Última Actualización:** 2026-01-06 
 
 ### 🚀 Nuevas Funcionalidades (v1.11.0)
