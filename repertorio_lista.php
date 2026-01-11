@@ -228,7 +228,9 @@ include 'header.php';
                             <?php if(!empty($s['midi_path'])): ?><a href="<?php echo $s['midi_path']; ?>" target="_blank" title="MIDI">🎹</a><?php endif; ?>
                             <?php if(!empty($s['propresenter_path'])): ?><a href="<?php echo $s['propresenter_path']; ?>" target="_blank" title="propresenter lyrics">📺</a><?php endif; ?>
                             <?php if(!empty($s['has_lyrics'])): ?><a href="<?php echo $s['has_lyrics']; ?>" target="_blank">📄</a><?php endif; ?>
-                            <?php if(!empty($s['youtube_link'])): ?><a href="<?php echo $s['youtube_link']; ?>" target="_blank">🎬</a><?php endif; ?>
+                            <?php if(!empty($s['youtube_link'])): ?><a href="<?php echo $s['youtube_link']; ?>" target="_blank" class="text-red-600 hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                            </a><?php endif; ?>
                         </div>
                     </td>
                     <td class="p-6 text-center">
@@ -521,7 +523,7 @@ function openDetailModal(song) {
     resContainer.innerHTML = '';
     
     const resources = [
-        { type: 'youtube', url: song.youtube_link, label: 'Ver en YouTube', icon: '▶', color: 'bg-red-50 text-red-600 border-red-100' },
+        { type: 'youtube', url: song.youtube_link, label: 'Ver en YouTube', icon: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>', color: 'bg-red-50 text-red-600 border-red-100' },
         { type: 'pdf', url: song.has_lyrics, label: 'Abrir PDF / Letra', icon: '📄', color: 'bg-blue-50 text-blue-600 border-blue-100' },
         { type: 'midi', url: song.midi_path, label: 'Descargar MIDI', icon: '🎹', color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
         { type: 'pro', url: song.propresenter_path, label: 'ProPresenter File', icon: '📺', color: 'bg-orange-50 text-orange-600 border-orange-100' }

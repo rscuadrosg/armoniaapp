@@ -2,6 +2,21 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.13.0] - 2026-01-06
+### Experiencia en Vivo (Live View)
+- **Diseño de Escenario**: Rediseño total de `live_view.php` para máxima legibilidad. Tono (Key) resaltado en gran tamaño y alto contraste.
+- **Lista Ultra-Compacta**: Optimización del espacio para mostrar más canciones por pantalla, priorizando Título y Tono sobre otros metadatos.
+
+### Vista de Músico
+- **Reorganización**: El repertorio ahora aparece antes que la lista de equipo en `view_event_musico.php` por prioridad de uso.
+- **Estilo Unificado**: La lista de canciones adopta el diseño compacto de la vista en vivo, con acceso a recursos mediante modal.
+- **Tabla de Equipo**: Nueva visualización de integrantes en formato de tabla de 3 columnas (Rol | Músico | Estado).
+
+### Gestión y UI
+- **Importación Inteligente (Upsert)**: El importador de CSV ahora actualiza los datos de las canciones si encuentra un ID existente, permitiendo ediciones masivas.
+- **Iconografía**: Se reemplazó el icono genérico de video por el logo oficial de YouTube en todas las vistas.
+- **Correcciones Responsive**: Ajuste en el formulario de "Instrumento Extra" en `view_event.php` para evitar desbordamiento en móviles.
+
 ## [1.12.0] - 2026-01-06
 ### UI / UX (Mobile First)
 - **Diseño Responsivo**: Reestructuración completa de las vistas principales (`index.php`, `repertorio_lista.php`, `events.php`) para optimizar la experiencia en dispositivos móviles.

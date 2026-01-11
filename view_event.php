@@ -253,7 +253,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
             
             <div class="mt-4 p-4 bg-slate-900 rounded-2xl text-white shadow-lg border border-white/5">
                 <form method="POST" class="flex flex-col gap-3">
-                    <div class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" name="instrument" placeholder="Instrumento Extra" class="flex-1 bg-white/10 p-3 rounded-xl text-xs border border-white/10 outline-none focus:ring-2 focus:ring-blue-500" required>
                         <select name="member_id" class="flex-1 bg-white/10 p-3 rounded-xl text-xs border border-white/10 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500" required>
                             <option value="" class="text-slate-500">¿Quién?</option>
@@ -263,7 +263,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <button name="add_member" class="bg-blue-600 hover:bg-blue-500 px-4 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg shadow-blue-900/20">OK</button>
+                        <button name="add_member" class="bg-blue-600 hover:bg-blue-500 p-3 sm:px-6 rounded-xl font-black text-[10px] uppercase transition-all shadow-lg shadow-blue-900/20 w-full sm:w-auto">OK</button>
                     </div>
                 </form>
             </div>

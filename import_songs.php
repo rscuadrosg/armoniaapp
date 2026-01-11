@@ -37,12 +37,26 @@ if (isset($_POST['import'])) {
                 $has_mt = (in_array($mt_raw, ['si', 'sí', 'yes', '1', 's', 'true', 'y'])) ? 1 : 0;
 
                 try {
-                    // 1. Insertar Canción
+                    // 1. Insertar o Actualizar Canción
                     if (!empty($id_manual) && is_numeric($id_manual)) {
-                        // Si viene ID manual, lo usamos
-                        $stmt = $pdo->prepare("INSERT INTO songs (id, title, artist, musical_key, bpm, youtube_link, has_lyrics, has_multitrack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                        // Si viene ID manual, usamos UPSERT (Insertar o Actualizar)
+                        $sql = "INSERT INTO songs (id, title, artist, musical_key, bpm, youtube_link, has_lyrics, has_multitrack) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                ON DUPLICATE KEY UPDATE 
+                                title = VALUES(title), 
+                                artist = VALUES(artist), 
+                                musical_key = VALUES(musical_key), 
+                                bpm = VALUES(bpm), 
+                                youtube_link = VALUES(youtube_link), 
+                                has_lyrics = VALUES(has_lyrics), 
+                                has_multitrack = VALUES(has_multitrack)";
+                        
+                        $stmt = $pdo->prepare($sql);
                         $stmt->execute([$id_manual, $title, $artist, $key, $bpm, $yt, $pdf, $has_mt]);
                         $song_id = $id_manual;
+                        
+                        // Limpiar etiquetas anteriores para evitar duplicados o datos viejos al actualizar
+                        $pdo->prepare("DELETE FROM song_tags WHERE song_id = ?")->execute([$song_id]);
                     } else {
                         // Si no, dejamos que sea automático
                         $stmt = $pdo->prepare("INSERT INTO songs (title, artist, musical_key, bpm, youtube_link, has_lyrics, has_multitrack) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -79,7 +93,7 @@ if (isset($_POST['import'])) {
                 }
             }
             fclose($handle);
-            $message = "✅ Proceso finalizado. Se importaron <b>$imported_count</b> canciones.";
+            $message = "✅ Proceso finalizado. Se procesaron <b>$imported_count</b> canciones (Insertadas o Actualizadas).";
         } else {
             $error = "No se pudo leer el archivo.";
         }

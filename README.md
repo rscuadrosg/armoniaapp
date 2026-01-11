@@ -4,6 +4,20 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.13.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.13.0)
+1. Live View 2.0 (Modo Escenario)
+   - **Alta Visibilidad**: Interfaz oscura de alto contraste con textos grandes para Tono y Título, diseñada para ser leída a distancia en el escenario.
+   - **Lista Compacta**: Optimización del espacio en pantalla para mostrar más canciones sin necesidad de scroll excesivo.
+
+2. Mejoras para Músicos
+   - **Flujo de Información**: Reordenamiento de la vista de servicio para mostrar primero las canciones y luego el equipo.
+   - **Gestión de Datos**: El importador CSV ahora permite editar canciones en lote (actualización) si se mantienen los IDs.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.12.0  
 **Última Actualización:** 2026-01-06 
 
