@@ -4,6 +4,20 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.14.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.14.0)
+1. Gestión Inteligente de Equipos
+   - **Auto-Asignación**: Algoritmo que sugiere y asigna músicos a servicios futuros respetando sus restricciones de tiempo y habilidades.
+   - **Perfiles Avanzados**: Control detallado de qué instrumentos toca cada miembro y cuándo puede servir.
+
+2. Roles y Permisos
+   - **Líderes de Sección**: Usuarios con capacidad de gestionar sus propios instrumentos sin acceso total al sistema.
+   - **Dashboard Personalizado**: Vista de inicio adaptada al rol del usuario (Gestión vs Agenda).
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.13.0  
 **Última Actualización:** 2026-01-06 
 

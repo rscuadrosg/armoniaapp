@@ -2,6 +2,17 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.14.0] - 2026-01-06
+### Gestión de Equipo y Automatización
+- **Roles y Liderazgo**: Implementación del rol "Líder de Instrumento" con permisos delegados para gestionar secciones específicas.
+- **Matriz de Habilidades**: Registro de instrumentos que toca cada miembro para filtrado inteligente en asignaciones.
+- **Control de Disponibilidad**: Configuración por músico de días disponibles y límite máximo de servicios mensuales.
+- **Auto-Equipo**: Nueva herramienta para rellenar automáticamente los roles vacíos del calendario basándose en disponibilidad y habilidades.
+
+### Experiencia de Usuario (UX)
+- **Dashboard Unificado**: La página de inicio (`index.php`) ahora se adapta dinámicamente: muestra estadísticas para Admins y la agenda personal para Músicos.
+- **Edición de Perfiles**: Gestión completa de miembros (crear/editar) mediante modales, incluyendo cambio de contraseña y roles.
+
 ## [1.13.0] - 2026-01-06
 ### Experiencia en Vivo (Live View)
 - **Diseño de Escenario**: Rediseño total de `live_view.php` para máxima legibilidad. Tono (Key) resaltado en gran tamaño y alto contraste.

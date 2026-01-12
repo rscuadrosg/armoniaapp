@@ -14,6 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Definimos la variable globalmente para que view_event.php la reconozca
 $currentRole = $_SESSION['user_role'] ?? 'musico';
 $isAdmin = ($currentRole === 'admin');
+$isLeader = ($currentRole === 'lider');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -49,6 +50,11 @@ $isAdmin = ($currentRole === 'admin');
                         <a href="settings_band.php" class="hover:text-blue-300 transition-colors" title="Configuracion de Banda">Banda</a>
                         <a href="settings_tags.php" class="hover:text-blue-300 transition-colors" title="Gestionar Etiquetas">Etiquetas</a>
                         <a href="generate_schedule.php" class="hover:text-blue-300 text-emerald-400 transition-colors" title="Generador Automático">Autogenerador</a>
+                        <a href="auto_assign_team.php" class="hover:text-blue-300 text-indigo-400 transition-colors" title="Asignar Equipo">Auto-Equipo</a>
+                    <?php elseif ($isLeader): ?>
+                        <a href="events.php" class="hover:text-blue-300 transition-colors">Servicios</a>
+                        <a href="members.php" class="hover:text-blue-300 transition-colors">Equipo</a>
+                        <a href="auto_assign_team.php" class="hover:text-blue-300 text-indigo-400 transition-colors" title="Asignar Equipo">Auto-Equipo</a>
                     <?php else: ?>
                         <a href="events.php" class="hover:text-blue-300 transition-colors">Servicios</a>
                     <?php endif; ?>

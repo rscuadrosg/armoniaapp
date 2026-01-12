@@ -13,7 +13,7 @@ if (!$event_id) {
 }
 
 // SEGURIDAD: Redirigir si no es admin ANTES de procesar cualquier cambio
-if (!$isAdmin) {
+if (!$isAdmin && !$isLeader) {
     echo "<script>window.location.href='view_event_musico.php?id=$event_id';</script>";
     exit;
 }
@@ -137,7 +137,7 @@ $all_songs = $pdo->prepare("
 ");
 $all_songs->execute([$event_id]);
 $all_songs = $all_songs->fetchAll();
-$all_members = $pdo->query("SELECT id, full_name FROM members ORDER BY full_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$all_members = $pdo->query("SELECT id, full_name, playable_instruments FROM members ORDER BY full_name ASC")->fetchAll(PDO::FETCH_ASSOC);
 $template_roles = $pdo->query("SELECT * FROM band_roles ORDER BY sort_order ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $current_songs = $pdo->prepare("SELECT s.id, s.title, s.musical_key FROM songs s JOIN event_songs es ON s.id = es.song_id WHERE es.event_id = ?");
@@ -157,6 +157,40 @@ $assignments = [];
 while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
     $assignments[$row['instrument']] = $row;
 }
+
+// --- LÓGICA DE LÍDER ---
+$my_leader_instruments = [];
+if ($isLeader) {
+    // Obtener el instrumento que lidera el usuario actual
+    $stmt_lider = $pdo->prepare("SELECT leader_instrument FROM members WHERE id = ?");
+    $stmt_lider->execute([$currentUserId]);
+    $str = $stmt_lider->fetchColumn();
+    if ($str) {
+        $my_leader_instruments = explode(',', $str);
+    }
+}
+
+// --- HELPER: Filtro Inteligente de Instrumentos ---
+function is_eligible($member, $role_name) {
+    $instruments = $member['playable_instruments'];
+    // Si no tiene instrumentos asignados, NO mostrar (filtro estricto)
+    if (empty($instruments)) return false;
+    
+    $member_insts = explode(',', $instruments);
+    
+    // Palabras clave para agrupación (Guitarras, Coros, Voces)
+    $keywords = ['guitarra', 'coro', 'voz', 'saxo', 'trompeta', 'violin', 'flauta', 'chelo'];
+    
+    foreach ($member_insts as $inst) {
+        // 1. Coincidencia exacta o parcial directa
+        if (stripos($role_name, $inst) !== false || stripos($inst, $role_name) !== false) return true;
+        // 2. Coincidencia por grupo (Keyword)
+        foreach ($keywords as $kw) {
+            if (stripos($role_name, $kw) !== false && stripos($inst, $kw) !== false) return true;
+        }
+    }
+    return false;
+}
 ?>
 
 <div class="container mx-auto px-4 max-w-6xl pb-20">
@@ -172,8 +206,12 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
         <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Setlist Musical</h2>
+                <?php if ($isAdmin): // Solo admin puede autogenerar ?>
                 <button onclick="document.getElementById('magicModal').classList.remove('hidden')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200">✨ Auto-Generar</button>
+                <?php endif; ?>
             </div>
+            
+            <?php if ($isAdmin): // Solo admin agrega canciones ?>
             <form method="POST" class="flex gap-2 mb-4">
                 <select name="song_id" class="flex-1 bg-transparent px-4 font-bold text-slate-600 outline-none text-sm cursor-pointer">
                     <option value="">Buscar canción...</option>
@@ -183,6 +221,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                 </select>
                 <button name="add_song" class="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all shadow-md shadow-blue-100">+</button>
             </form>
+            <?php endif; ?>
 
             <div class="space-y-2">
                 <?php while($s = $current_songs->fetch()): ?>
@@ -191,7 +230,9 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                             <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-blue-600 font-black text-[10px] border border-slate-100"><?php echo $s['musical_key']; ?></div>
                             <span class="font-bold text-slate-700 text-sm uppercase tracking-tight"><?php echo htmlspecialchars($s['title']); ?></span>
                         </div>
+                        <?php if ($isAdmin): ?>
                         <a href="?id=<?php echo $event_id; ?>&del_song=<?php echo $s['id']; ?>" class="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-red-500 transition-all">✕</a>
+                        <?php endif; ?>
                     </div>
                 <?php endwhile; ?>
             </div>
@@ -209,6 +250,13 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                     if ($info) {
                         if ($info['confirmation_status'] == 'confirmado') { $dot_color = 'bg-green-500'; $text_status = 'Confirmado'; }
                         elseif ($info['confirmation_status'] == 'rechazado') { $dot_color = 'bg-red-500'; $text_status = 'No asiste'; }
+                    }
+
+                    // Verificar permisos de edición para este rol específico
+                    $can_edit_this_role = $isAdmin;
+                    if ($isLeader && in_array($r_name, $my_leader_instruments)) {
+                        // Coincidencia exacta con los roles asignados al líder
+                            $can_edit_this_role = true;
                     }
                 ?>
                     <div class="flex justify-between items-center p-3 <?php echo $info ? 'bg-slate-50' : 'bg-white border-dashed'; ?> border border-slate-200 rounded-xl relative group transition-all">
@@ -235,22 +283,29 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                             </div>
                         </div>
 
+                        <?php if ($can_edit_this_role): ?>
                         <form method="POST" class="flex gap-2">
                             <input type="hidden" name="instrument" value="<?php echo htmlspecialchars($r_name); ?>">
                             <select name="member_id" onchange="this.form.submit()" class="text-[10px] font-bold p-1.5 rounded-lg border-none bg-transparent text-slate-500 outline-none cursor-pointer hover:bg-slate-100 transition-colors">
                                 <option value="">Asignar...</option>
-                                <?php foreach($all_members as $m): ?>
-                                    <option value="<?php echo $m['id']; ?>" <?php echo ($info && $info['member_id'] == $m['id']) ? 'selected' : ''; ?>>
+                                <?php foreach($all_members as $m): 
+                                    // Mostrar si es elegible O si ya está asignado (para no romper asignaciones previas)
+                                    $is_assigned = ($info && $info['member_id'] == $m['id']);
+                                    if (!$is_assigned && !is_eligible($m, $r_name)) continue;
+                                ?>
+                                    <option value="<?php echo $m['id']; ?>" <?php echo $is_assigned ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($m['full_name']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                             <input type="hidden" name="add_member" value="1">
                         </form>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
             
+            <?php if ($isAdmin): // Solo admin agrega instrumentos extra arbitrarios ?>
             <div class="mt-4 p-4 bg-slate-900 rounded-2xl text-white shadow-lg border border-white/5">
                 <form method="POST" class="flex flex-col gap-3">
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -267,6 +322,7 @@ while($row = $assigned_stmt->fetch(PDO::FETCH_ASSOC)) {
                     </div>
                 </form>
             </div>
+            <?php endif; ?>
         </section>
     </div>
 </div>

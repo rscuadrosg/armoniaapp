@@ -14,4 +14,5 @@ $currentUserId = $_SESSION['user_id'];
 $userName = $_SESSION['user_name'];
 $userRole = $_SESSION['user_role'];
 $isAdmin = ($userRole === 'admin');
+$isLeader = ($userRole === 'lider');
 ?>

@@ -113,7 +113,7 @@ $stmt = $pdo->query("SELECT id, description, event_date FROM events WHERE $where
                 </div>
 
                 <div class="flex gap-2 flex-shrink-0">
-                    <?php if ($isAdmin): ?>
+                    <?php if ($isAdmin || $isLeader): ?>
                     <a href="view_event.php?id=<?php echo $row['id']; ?>" class="w-9 h-9 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all" title="Configurar">
                         ⚙️
                     </a>

@@ -12,6 +12,10 @@ if (isset($_GET['event_id']) && isset($_GET['member_id']) && isset($_GET['status
                            ON DUPLICATE KEY UPDATE status = ?");
     $stmt->execute([$event_id, $member_id, $status, $status]);
 
-    header("Location: dashboard.php");
+    if (isset($_SERVER['HTTP_REFERER'])) {
+        header("Location: " . $_SERVER['HTTP_REFERER']);
+    } else {
+        header("Location: index.php");
+    }
     exit;
 }

@@ -16,21 +16,37 @@ if (!$user) {
     exit;
 }
 
-// 2. OBTENER SERVICIOS (Consulta Corregida)
+// --- LÓGICA DE HISTORIAL ---
+$showHistory = isset($_GET['history']) && $_GET['history'] == '1';
+$dateCondition = $showHistory ? "e.event_date < CURDATE()" : "e.event_date >= CURDATE()";
+$orderDirection = $showHistory ? "DESC" : "ASC";
+$sectionTitle = $showHistory ? "Historial de Servicios" : "Mi Agenda de Servicio";
+
+// 2. OBTENER SERVICIOS (Lista Principal)
 $my_events = $pdo->prepare("
     SELECT 
         e.id, 
-        e.description,  -- USAMOS 'description' QUE ES LA COLUMNA REAL
+        e.description,
         e.event_date, 
         ea.instrument,
         ec.status as confirmation_status
     FROM events e
     JOIN event_assignments ea ON e.id = ea.event_id
     LEFT JOIN event_confirmations ec ON (e.id = ec.event_id AND ec.member_id = ?)
-    WHERE ea.member_id = ? AND e.event_date >= CURDATE()
-    ORDER BY e.event_date ASC
+    WHERE ea.member_id = ? AND $dateCondition
+    ORDER BY e.event_date $orderDirection
 ");
 $my_events->execute([$my_id, $my_id]);
+
+// 3. CONTADOR DE PRÓXIMOS (Para el header, siempre fijos)
+$stmt_count = $pdo->prepare("
+    SELECT COUNT(*) 
+    FROM events e
+    JOIN event_assignments ea ON e.id = ea.event_id
+    WHERE ea.member_id = ? AND e.event_date >= CURDATE()
+");
+$stmt_count->execute([$my_id]);
+$upcoming_count = $stmt_count->fetchColumn();
 
 include 'header.php';
 ?>
@@ -62,23 +78,56 @@ include 'header.php';
             <h1 class="text-4xl font-black text-slate-800 tracking-tighter leading-none mb-2">
                 <?php echo htmlspecialchars($user['full_name']); ?>
             </h1>
-            <p class="text-blue-500 font-bold uppercase text-[10px] tracking-[0.3em]">Integrante del Ministerio</p>
+            
+            <?php
+            $role_label = "Integrante";
+            $detail_label = "";
+            
+            switch($user['role']) {
+                case 'admin': 
+                    $role_label = "Administrador"; 
+                    break;
+                case 'director': 
+                    $role_label = "Director Musical"; 
+                    break;
+                case 'lider': 
+                    $role_label = "Líder de Sección";
+                    if(!empty($user['leader_instrument'])) $detail_label = str_replace(',', ' • ', $user['leader_instrument']);
+                    break;
+                case 'musico': 
+                    $role_label = "Músico";
+                    if(!empty($user['playable_instruments'])) $detail_label = str_replace(',', ' • ', $user['playable_instruments']);
+                    break;
+            }
+            ?>
+            <p class="text-blue-500 font-bold uppercase text-[10px] tracking-[0.3em] mb-1"><?php echo $role_label; ?></p>
+            <?php if($detail_label): ?>
+                <p class="text-slate-400 font-bold text-[9px] uppercase tracking-widest"><?php echo htmlspecialchars($detail_label); ?></p>
+            <?php endif; ?>
             
             <div class="flex gap-3 mt-6 justify-center md:justify-start">
                 <div class="bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
                     <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Próximos</span>
-                    <span class="text-lg font-black text-slate-700"><?php echo $my_events->rowCount(); ?> Servicios</span>
+                    <span class="text-lg font-black text-slate-700"><?php echo $upcoming_count; ?> Servicios</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <h2 class="text-2xl font-black text-slate-800 mb-6 px-2 tracking-tight">Mi Agenda de Servicio</h2>
+    <div class="flex flex-col md:flex-row justify-between items-end mb-6 px-2 gap-4">
+        <h2 class="text-2xl font-black text-slate-800 tracking-tight"><?php echo $sectionTitle; ?></h2>
+        
+        <a href="?history=<?php echo $showHistory ? '0' : '1'; ?>" class="bg-white border border-slate-200 text-slate-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+            <?php echo $showHistory ? 'Ver Próximos' : 'Ver Historial'; ?>
+        </a>
+    </div>
     
     <div class="grid gap-4">
         <?php if($my_events->rowCount() == 0): ?>
             <div class="bg-white p-10 rounded-[2.5rem] text-center border-2 border-dashed border-slate-200">
-                <p class="text-slate-400 font-bold italic">No tienes servicios asignados próximamente.</p>
+                <p class="text-slate-400 font-bold italic">
+                    <?php echo $showHistory ? 'No tienes servicios pasados.' : 'No tienes servicios asignados próximamente.'; ?>
+                </p>
             </div>
         <?php endif; ?>
 
