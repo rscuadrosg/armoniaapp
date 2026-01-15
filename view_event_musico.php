@@ -60,9 +60,17 @@ include 'header.php';
             <?php echo date('d M, Y', strtotime($event['event_date'])); ?>
         </p>
 
-        <a href="live_view.php?id=<?php echo $event_id; ?>" class="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest mt-4 shadow-lg shadow-slate-300 hover:bg-slate-800 transition-all">
-            <span>⚡</span> Vista en Vivo
-        </a>
+        <div class="flex flex-wrap justify-center gap-3 mt-4">
+            <a href="live_view.php?id=<?php echo $event_id; ?>" class="inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-slate-300 hover:bg-slate-800 transition-all">
+                <span>⚡</span> Vista en Vivo
+            </a>
+
+            <?php if ($isAdmin || $isLeader): ?>
+            <a href="view_event.php?id=<?php echo $event_id; ?>" class="inline-flex items-center gap-2 bg-white text-slate-600 border border-slate-200 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">
+                <span>⚙️</span> Editar
+            </a>
+            <?php endif; ?>
+        </div>
     </header>
 
     <!-- 1. REPERTORIO (Prioridad Alta) -->

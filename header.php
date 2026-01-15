@@ -15,6 +15,20 @@ if (session_status() === PHP_SESSION_NONE) {
 $currentRole = $_SESSION['user_role'] ?? 'musico';
 $isAdmin = ($currentRole === 'admin');
 $isLeader = ($currentRole === 'lider');
+
+// Cargar Configuración (Logo/Favicon)
+$app_settings = [];
+if (isset($pdo)) {
+    try {
+        $stmt = $pdo->query("SELECT * FROM app_settings");
+        while($row = $stmt->fetch()) $app_settings[$row['setting_key']] = $row['setting_value'];
+    } catch (Exception $e) { /* Ignorar si tabla no existe aun */ }
+}
+
+// Detectar Módulo Activo
+$current_page = basename($_SERVER['PHP_SELF']);
+$worship_pages = ['worship.php', 'repertorio_lista.php', 'events.php', 'members.php', 'view_event.php', 'view_event_musico.php', 'settings_band.php', 'settings_tags.php', 'generate_schedule.php', 'auto_assign_team.php', 'repertorio_borrar.php', 'add_event.php', 'add_event_songs.php', 'edit_song.php', 'import_songs.php', 'settings_general.php'];
+$is_worship_module = in_array($current_page, $worship_pages);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -23,85 +37,149 @@ $isLeader = ($currentRole === 'lider');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/styles.css?v=<?php echo time(); ?>">
+    <?php if(!empty($app_settings['favicon_path'])): ?>
+        <link rel="icon" href="uploads/<?php echo $app_settings['favicon_path']; ?>">
+    <?php endif; ?>
+    <title><?php echo htmlspecialchars($app_settings['app_name'] ?? 'ArmoniaApp'); ?></title>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen flex flex-col md:flex-row">
 
-    <nav class="bg-[#1e293b] text-white shadow-lg mb-6 sticky top-0 z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <a href="index.php" class="text-xl font-black italic tracking-tighter uppercase">
-                    Armonia<span class="text-blue-500">App</span>
-                </a>
+    <!-- SIDEBAR (Solo visible en escritorio y si estamos en un módulo) -->
+    <?php if($is_worship_module): ?>
+    <aside class="hidden md:flex flex-col w-64 bg-[#1e293b] text-white h-screen sticky top-0 overflow-y-auto shrink-0">
+        <div class="p-6">
+            <a href="worship.php" class="flex items-center gap-3 text-xl font-black italic tracking-tighter uppercase">
+                <?php if(!empty($app_settings['logo_path'])): ?>
+                    <img src="uploads/<?php echo $app_settings['logo_path']; ?>" class="h-14 w-auto">
+                <?php endif; ?>
+                <span class="<?php echo !empty($app_settings['logo_path']) ? 'hidden' : ''; ?>"><?php echo htmlspecialchars($app_settings['app_name'] ?? 'ArmoniaApp'); ?></span>
+            </a>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Módulo de Alabanza</p>
+        </div>
 
+        <nav class="flex-1 px-4 space-y-2">
+            <a href="worship.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'worship.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>🏠</span> <span class="text-xs font-bold uppercase tracking-widest">Inicio</span>
+            </a>
+            <a href="repertorio_lista.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'repertorio_lista.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>🎵</span> <span class="text-xs font-bold uppercase tracking-widest">Repertorio</span>
+            </a>
+            <a href="events.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'events.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>📅</span> <span class="text-xs font-bold uppercase tracking-widest">Servicios</span>
+            </a>
+            
+            <?php if ($isAdmin || $isLeader): ?>
+            <div class="pt-4 pb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-widest">Gestión</div>
+            <a href="members.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'members.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>👥</span> <span class="text-xs font-bold uppercase tracking-widest">Equipo</span>
+            </a>
+            <a href="auto_assign_team.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'auto_assign_team.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>🤖</span> <span class="text-xs font-bold uppercase tracking-widest">Auto-Asignar</span>
+            </a>
+            <?php endif; ?>
+
+            <?php if ($isAdmin): ?>
+            <div class="pt-4 pb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-widest">Configuración</div>
+            <a href="settings_band.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'settings_band.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>🎸</span> <span class="text-xs font-bold uppercase tracking-widest">Banda</span>
+            </a>
+            <a href="settings_tags.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'settings_tags.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>🏷️</span> <span class="text-xs font-bold uppercase tracking-widest">Etiquetas</span>
+            </a>
+            <a href="generate_schedule.php" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition-colors <?php echo $current_page == 'generate_schedule.php' ? 'bg-blue-600 shadow-lg shadow-blue-900/50' : 'text-slate-400'; ?>">
+                <span>✨</span> <span class="text-xs font-bold uppercase tracking-widest">Generador</span>
+            </a>
+            <?php endif; ?>
+        </nav>
+
+        <div class="p-4 border-t border-slate-700">
+            <a href="index.php" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300">
+                <span>⬅</span> <span class="text-xs font-bold uppercase tracking-widest">Cambiar Módulo</span>
+            </a>
+        </div>
+    </aside>
+    <?php endif; ?>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- TOP BAR (Móvil y Escritorio) -->
+        <nav class="bg-[#1e293b] border-b border-slate-700 px-6 py-3 flex justify-between items-center shrink-0 z-40 shadow-md">
+            <div class="flex items-center gap-4">
                 <!-- Mobile Menu Button -->
-                <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white focus:outline-none">
+                <button id="mobile-menu-btn" class="md:hidden text-slate-400 hover:text-white focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
-
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest">
-                    <a href="index.php" class="hover:text-blue-300 transition-colors">Home</a>
-                    <a href="repertorio_lista.php" class="hover:text-blue-300 transition-colors">Repertorio</a>
-                    
-                    <?php if ($isAdmin): ?>
-                        <a href="members.php" class="hover:text-blue-300 transition-colors">Equipo</a>
-                        <a href="events.php" class="hover:text-blue-300 transition-colors">Servicios</a>
-                        <a href="settings_band.php" class="hover:text-blue-300 transition-colors" title="Configuracion de Banda">Banda</a>
-                        <a href="settings_tags.php" class="hover:text-blue-300 transition-colors" title="Gestionar Etiquetas">Etiquetas</a>
-                        <a href="generate_schedule.php" class="hover:text-blue-300 text-emerald-400 transition-colors" title="Generador Automático">Autogenerador</a>
-                        <a href="auto_assign_team.php" class="hover:text-blue-300 text-indigo-400 transition-colors" title="Asignar Equipo">Auto-Equipo</a>
-                    <?php elseif ($isLeader): ?>
-                        <a href="events.php" class="hover:text-blue-300 transition-colors">Servicios</a>
-                        <a href="members.php" class="hover:text-blue-300 transition-colors">Equipo</a>
-                        <a href="auto_assign_team.php" class="hover:text-blue-300 text-indigo-400 transition-colors" title="Asignar Equipo">Auto-Equipo</a>
-                    <?php else: ?>
-                        <a href="events.php" class="hover:text-blue-300 transition-colors">Servicios</a>
+                
+                <!-- Logo (Solo visible en móvil o si no hay sidebar) -->
+                <div class="<?php echo $is_worship_module ? 'md:hidden' : ''; ?> flex items-center gap-2">
+                    <?php if(!empty($app_settings['logo_path'])): ?>
+                        <img src="uploads/<?php echo $app_settings['logo_path']; ?>" class="h-10 w-auto">
                     <?php endif; ?>
-                    
-                    <div class="flex items-center gap-3 ml-4 border-l border-slate-700 pl-4">
-                        <a href="dashboard.php" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl shadow-lg shadow-blue-900/50 flex items-center gap-2 border border-blue-400/30 transition-all">
-                            <span class="text-sm">&#128100;</span> MI PANEL
-                        </a>
-                        <a href="logout.php" class="text-slate-400 hover:text-red-400 transition-colors" title="Cerrar Sesión">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        </a>
-                    </div>
+                    <span class="<?php echo !empty($app_settings['logo_path']) ? 'hidden md:block' : ''; ?> text-lg font-black italic tracking-tighter uppercase text-white"><?php echo htmlspecialchars($app_settings['app_name'] ?? 'ArmoniaApp'); ?></span>
                 </div>
             </div>
-        </div>
 
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="hidden md:hidden bg-slate-800 border-t border-slate-700">
-            <div class="px-4 pt-2 pb-6 space-y-1 flex flex-col text-xs font-bold uppercase tracking-widest">
-                <a href="index.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Home</a>
-                
-                <a href="repertorio_lista.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Repertorio</a>
-                
-                <?php if ($isAdmin): ?>
-                    <a href="members.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Equipo</a>
-                    <a href="events.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Servicios</a>
-                    <a href="settings_band.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Banda</a>
-                    <a href="settings_tags.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Etiquetas</a>
-                    <a href="generate_schedule.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-emerald-400 hover:text-emerald-300">Autogenerador</a>
-                <?php else: ?>
-                    <a href="events.php" class="block px-3 py-3 rounded-md hover:bg-slate-700 text-slate-300 hover:text-white">Servicios</a>
+            <div class="flex items-center gap-4">
+                <?php if($isAdmin): ?>
+                    <a href="settings_general.php" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-slate-700">
+                        <span>⚙️</span> <span class="hidden sm:inline">Configuración</span>
+                    </a>
                 <?php endif; ?>
+                <div class="h-6 w-px bg-slate-700"></div>
+                <a href="logout.php" class="text-xs font-bold text-red-400 hover:text-red-300 uppercase tracking-widest">Salir</a>
+            </div>
+        </nav>
+
+        <!-- SCROLLABLE CONTENT -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 relative">
+            
+            <!-- Mobile Menu Overlay (Solo para móvil) -->
+            <div id="mobile-menu" class="hidden fixed inset-0 bg-slate-900/95 z-50 p-6 flex flex-col overflow-y-auto">
+                <div class="flex justify-between items-center mb-8 shrink-0">
+                    <span class="text-white text-xl font-black italic uppercase">Menú</span>
+                    <button id="close-mobile-menu" class="text-white text-2xl">✕</button>
+                </div>
                 
-                <div class="border-t border-slate-700 mt-4 pt-4 flex gap-2">
-                    <a href="dashboard.php" class="flex-1 bg-blue-600 text-center py-3 rounded-xl shadow-lg font-black">MI PANEL</a>
-                    <a href="logout.php" class="bg-red-600/20 text-red-400 px-4 py-3 rounded-xl text-center font-black">SALIR</a>
+                <div class="space-y-6 text-center flex-1">
+                    <div>
+                        <a href="index.php" class="block text-white text-2xl font-black italic uppercase mb-2">Hub Principal</a>
+                        <a href="worship.php" class="block text-blue-400 text-lg font-bold">Panel de Alabanza</a>
+                    </div>
+
+                    <div class="space-y-4 border-t border-slate-700 pt-6">
+                        <a href="repertorio_lista.php" class="block text-slate-300 text-xl font-bold hover:text-white">🎵 Repertorio</a>
+                        <a href="events.php" class="block text-slate-300 text-xl font-bold hover:text-white">📅 Servicios</a>
+                        
+                        <?php if ($isAdmin || $isLeader): ?>
+                            <a href="members.php" class="block text-slate-300 text-xl font-bold hover:text-white">👥 Equipo</a>
+                            <a href="auto_assign_team.php" class="block text-slate-300 text-xl font-bold hover:text-white">🤖 Auto-Asignar</a>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if($isAdmin): ?>
+                    <div class="space-y-3 border-t border-slate-700 pt-6">
+                        <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Configuración</p>
+                        <a href="settings_band.php" class="block text-slate-400 text-sm font-bold hover:text-white">🎸 Banda</a>
+                        <a href="settings_tags.php" class="block text-slate-400 text-sm font-bold hover:text-white">🏷️ Etiquetas</a>
+                        <a href="generate_schedule.php" class="block text-slate-400 text-sm font-bold hover:text-white">✨ Generador</a>
+                        <a href="settings_general.php" class="block text-slate-400 text-sm font-bold hover:text-white">⚙️ General</a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-slate-700 shrink-0">
+                    <a href="logout.php" class="block bg-red-600 text-white py-4 rounded-xl font-black uppercase tracking-widest text-center">Cerrar Sesión</a>
                 </div>
             </div>
-        </div>
-    </nav>
 
-    <script>
-        // Lógica del Menú Móvil
-        const btn = document.getElementById('mobile-menu-btn');
-        const menu = document.getElementById('mobile-menu');
-
-        btn.addEventListener('click', () => {
-            menu.classList.toggle('hidden');
-        });
-    </script>
+            <script>
+                const btn = document.getElementById('mobile-menu-btn');
+                const closeBtn = document.getElementById('close-mobile-menu');
+                const menu = document.getElementById('mobile-menu');
+                
+                if(btn) {
+                    btn.addEventListener('click', () => menu.classList.remove('hidden'));
+                    closeBtn.addEventListener('click', () => menu.classList.add('hidden'));
+                }
+            </script>

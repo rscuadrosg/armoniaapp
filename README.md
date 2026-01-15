@@ -4,6 +4,20 @@ Este proyecto es un panel administrativo avanzado diseñado para gestionar una b
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**Versión:** 1.15.0  
+**Última Actualización:** 2026-01-06 
+
+### 🚀 Nuevas Funcionalidades (v1.15.0)
+1. Arquitectura Modular
+   - **Hub de Aplicaciones**: Un punto de entrada centralizado que permite escalar la plataforma agregando nuevos módulos (Ujieres, Niños, etc.) sin saturar la interfaz.
+   - **Navegación Contextual**: Menús laterales específicos para cada módulo que maximizan el espacio de trabajo.
+
+2. Personalización
+   - **Branding**: Carga de Logo y Favicon personalizados desde el panel de administración.
+   - **Interfaz Adaptable**: El sistema oculta el nombre de texto si detecta un logo gráfico para limpiar la interfaz.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 **Versión:** 1.14.0  
 **Última Actualización:** 2026-01-06 
 

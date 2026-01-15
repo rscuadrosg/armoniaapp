@@ -2,6 +2,20 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.15.0] - 2026-01-14
+### Arquitectura Modular
+- **Hub Central**: Transformación de la página de inicio en un selector de módulos (Alabanza, Ujieres, Niños).
+- **Módulo de Alabanza**: Espacio dedicado (`worship.php`) con barra lateral de navegación exclusiva para la gestión musical.
+- **Navegación Jerárquica**: Separación clara entre el menú global (Top Bar) y el menú del módulo (Sidebar).
+
+### Personalización (White Label)
+- **Identidad de Marca**: Nuevo panel de `Configuración General` para subir Logo, Favicon y cambiar el nombre de la aplicación.
+- **Adaptabilidad UI**: El encabezado y la barra lateral se ajustan automáticamente para mostrar el logo o el texto según la configuración.
+
+### UI / UX
+- **Header Oscuro**: Rediseño de la barra superior con tonos oscuros para mayor profesionalismo.
+- **Navegación Móvil**: Menú hamburguesa rediseñado para incluir acceso rápido a herramientas, cambio de módulo y cierre de sesión.
+
 ## [1.14.0] - 2026-01-06
 ### Gestión de Equipo y Automatización
 - **Roles y Liderazgo**: Implementación del rol "Líder de Instrumento" con permisos delegados para gestionar secciones específicas.

@@ -64,6 +64,12 @@ $stmt = $pdo->query("SELECT id, description, event_date FROM events WHERE $where
 ?>
 
 <main class="container mx-auto p-4 max-w-5xl pb-20">
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'saved'): ?>
+        <div class="bg-green-100 text-green-700 p-4 rounded-2xl mb-6 text-center font-bold text-sm shadow-sm">
+            ✅ Cambios guardados correctamente.
+        </div>
+    <?php endif; ?>
+
     <!-- Header Compacto -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 mt-4 gap-4">
         <div class="text-center md:text-left">

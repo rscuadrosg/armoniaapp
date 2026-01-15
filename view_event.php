@@ -31,7 +31,7 @@ if (isset($_POST['add_member'])) {
                                ON DUPLICATE KEY UPDATE member_id = VALUES(member_id)");
         $stmt->execute([$event_id, $m_id, $inst]);
     }
-    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
 }
 
@@ -43,19 +43,19 @@ if (isset($_POST['add_song']) && !empty($_POST['song_id'])) {
         $stmt = $pdo->prepare("INSERT INTO event_songs (event_id, song_id) VALUES (?, ?)");
         $stmt->execute([$event_id, $_POST['song_id']]);
     }
-    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
 }
 
 // Borrados
 if (isset($_GET['del_song'])) {
     $pdo->prepare("DELETE FROM event_songs WHERE event_id = ? AND song_id = ?")->execute([$event_id, $_GET['del_song']]);
-    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
 }
 if (isset($_GET['del_assignment'])) {
     $pdo->prepare("DELETE FROM event_assignments WHERE id = ?")->execute([$_GET['del_assignment']]);
-    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
 }
 
@@ -118,7 +118,7 @@ if (isset($_POST['auto_generate_setlist'])) {
         }
     }
     
-    echo "<script>window.location.href='view_event.php?id=$event_id';</script>";
+    echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
 }
 
@@ -194,12 +194,22 @@ function is_eligible($member, $role_name) {
 ?>
 
 <div class="container mx-auto px-4 max-w-6xl pb-20">
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'updated'): ?>
+        <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300">
+            <span>✅</span> <span class="font-bold text-xs uppercase tracking-widest">Guardado</span>
+        </div>
+        <script>setTimeout(() => document.getElementById('toast').remove(), 3000);</script>
+    <?php endif; ?>
+
     <header class="mb-6 mt-6">
         <div class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase mb-2 tracking-widest">Panel Administrativo</div>
         <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none mb-1">
             <?php echo htmlspecialchars($event['description'] ?? ($event['event_title'] ?? 'Servicio')); ?>
         </h1>
-        <p class="text-sm text-slate-400 font-bold uppercase tracking-widest"><?php echo date('d \d\e F, Y', strtotime($event['event_date'])); ?></p>
+        <div class="flex items-center gap-3 mt-1">
+            <p class="text-sm text-slate-400 font-bold uppercase tracking-widest"><?php echo date('d \d\e F, Y', strtotime($event['event_date'])); ?></p>
+            <span class="bg-green-50 text-green-600 text-[9px] font-black px-2 py-0.5 rounded-full border border-green-100 flex items-center gap-1">● Autoguardado</span>
+        </div>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -213,13 +223,16 @@ function is_eligible($member, $role_name) {
             
             <?php if ($isAdmin): // Solo admin agrega canciones ?>
             <form method="POST" class="flex gap-2 mb-4">
-                <select name="song_id" class="flex-1 bg-transparent px-4 font-bold text-slate-600 outline-none text-sm cursor-pointer">
-                    <option value="">Buscar canción...</option>
-                    <?php foreach($all_songs as $s): ?>
-                        <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['title']); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <button name="add_song" class="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all shadow-md shadow-blue-100">+</button>
+                <div class="relative flex-1 min-w-0">
+                    <select name="song_id" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-600 outline-none text-sm cursor-pointer appearance-none pr-8 border border-slate-100 focus:ring-2 focus:ring-blue-100 transition-all">
+                        <option value="">+ Agregar canción...</option>
+                        <?php foreach($all_songs as $s): ?>
+                            <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['title']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                </div>
+                <button name="add_song" class="bg-blue-600 hover:bg-blue-700 text-white w-12 rounded-xl flex items-center justify-center font-black text-xl transition-all shadow-lg shadow-blue-200 shrink-0 active:scale-95">+</button>
             </form>
             <?php endif; ?>
 
@@ -324,6 +337,13 @@ function is_eligible($member, $role_name) {
             </div>
             <?php endif; ?>
         </section>
+    </div>
+
+    <!-- Botón de Guardar/Salir -->
+    <div class="mt-8 flex justify-end border-t border-slate-200 pt-6">
+        <a href="events.php?msg=saved" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all transform hover:-translate-y-1 flex items-center gap-3">
+            <span>💾</span> Guardar y Finalizar
+        </a>
     </div>
 </div>
 
