@@ -69,18 +69,23 @@ if ($isAdmin) {
         <?php else: ?>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-50">
                 <?php foreach($proximosServicios as $evento): ?>
+                <?php
+                    $date_ts = strtotime($evento['event_date']);
+                    $days_es = ['Sun'=>'DOM','Mon'=>'LUN','Tue'=>'MAR','Wed'=>'MIE','Thu'=>'JUE','Fri'=>'VIE','Sat'=>'SAB'];
+                    $day_name = $days_es[date('D', $date_ts)];
+                ?>
                 <div class="p-4 flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 overflow-hidden">
                         <div class="bg-slate-100 text-slate-600 w-10 h-10 rounded-xl flex flex-col items-center justify-center flex-shrink-0">
-                            <span class="text-[8px] font-black uppercase leading-none"><?php echo date('M', strtotime($evento['event_date'])); ?></span>
-                            <span class="text-sm font-black leading-none"><?php echo date('d', strtotime($evento['event_date'])); ?></span>
+                            <span class="text-[7px] font-black uppercase leading-none text-blue-500 mb-0.5"><?php echo $day_name; ?></span>
+                            <span class="text-sm font-black leading-none"><?php echo date('d', $date_ts); ?></span>
                         </div>
                         <div class="min-w-0">
                             <h4 class="font-black text-slate-800 text-xs uppercase truncate">
                                 <?php echo htmlspecialchars($evento['description']); ?>
                             </h4>
                             <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                <?php echo date('Y', strtotime($evento['event_date'])); ?> • Activo
+                                <?php echo date('h:i A', $date_ts); ?> • <?php echo date('Y', $date_ts); ?>
                             </p>
                         </div>
                     </div>

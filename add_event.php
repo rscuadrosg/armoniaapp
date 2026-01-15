@@ -15,11 +15,13 @@ if (!$isAdmin) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_base_event'])) {
     $description = $_POST['description'] ?? '';
     $event_date = $_POST['event_date'] ?? '';
+    $event_time = $_POST['event_time'] ?? '09:00';
 
     if (!empty($description) && !empty($event_date)) {
         try {
+            $full_date = $event_date . ' ' . $event_time . ':00';
             $stmt = $pdo->prepare("INSERT INTO events (event_date, description) VALUES (?, ?)");
-            $stmt->execute([$event_date, $description]);
+            $stmt->execute([$full_date, $description]);
             $event_id = $pdo->lastInsertId();
             
             // REDIRECCIÓN SEGURA POR JAVASCRIPT
@@ -56,10 +58,17 @@ include 'header.php';
                        class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
             </div>
 
+        <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Fecha</label>
                 <input type="date" name="event_date" required 
                        class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+            </div>
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Hora</label>
+                <input type="time" name="event_time" value="09:00" required 
+                       class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+            </div>
             </div>
 
             <button type="submit" name="create_base_event" 

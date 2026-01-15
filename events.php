@@ -7,11 +7,13 @@ require_once 'db_config.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_base_event'])) {
     $description = $_POST['description'] ?? '';
     $event_date = $_POST['event_date'] ?? '';
+    $event_time = $_POST['event_time'] ?? '09:00';
 
     if (!empty($description) && !empty($event_date)) {
         try {
+            $full_date = $event_date . ' ' . $event_time . ':00';
             $stmt = $pdo->prepare("INSERT INTO events (event_date, description) VALUES (?, ?)");
-            $stmt->execute([$event_date, $description]);
+            $stmt->execute([$full_date, $description]);
             $event_id = $pdo->lastInsertId();
             
             // Redirección al paso 2 (Canciones)
@@ -101,19 +103,23 @@ $stmt = $pdo->query("SELECT id, description, event_date FROM events WHERE $where
                 $dia = date('d', $fecha);
                 $mes = strtoupper(date('M', $fecha));
                 $año = date('Y', $fecha);
+                $hora = date('h:i A', $fecha);
+                
+                $days_es = ['Sun'=>'DOM','Mon'=>'LUN','Tue'=>'MAR','Wed'=>'MIE','Thu'=>'JUE','Fri'=>'VIE','Sat'=>'SAB'];
+                $day_name = $days_es[date('D', $fecha)];
             ?>
             <div class="p-3 md:p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors group">
                 <div class="flex items-center gap-3 overflow-hidden flex-1">
                     <div class="bg-slate-100 text-slate-600 w-10 h-10 md:w-12 md:h-12 rounded-xl flex flex-col items-center justify-center flex-shrink-0 border border-slate-200">
-                        <span class="text-[8px] md:text-[9px] font-black uppercase leading-none opacity-60"><?php echo $mes; ?></span>
-                        <span class="text-base md:text-lg font-black leading-none text-slate-800"><?php echo $dia; ?></span>
+                        <span class="text-[7px] md:text-[8px] font-black uppercase leading-none text-blue-500 mb-0.5"><?php echo $day_name; ?></span>
+                        <span class="text-sm md:text-base font-black leading-none text-slate-800"><?php echo $dia; ?></span>
                     </div>
                     <div class="min-w-0 flex-1">
                         <h3 class="font-black text-slate-800 text-xs md:text-sm uppercase leading-tight break-words">
                             <?php echo htmlspecialchars($row['description']); ?>
                         </h3>
                         <p class="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                            <?php echo $año; ?>
+                            <?php echo $año; ?> • <?php echo $hora; ?>
                         </p>
                     </div>
                 </div>
@@ -156,10 +162,17 @@ $stmt = $pdo->query("SELECT id, description, event_date FROM events WHERE $where
                        class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
             </div>
 
-            <div>
-                <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Fecha</label>
-                <input type="date" name="event_date" required 
-                       class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Fecha</label>
+                    <input type="date" name="event_date" required 
+                           class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Hora</label>
+                    <input type="time" name="event_time" value="09:00" required 
+                           class="w-full p-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-700 focus:bg-white focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+                </div>
             </div>
 
             <button type="submit" name="create_base_event" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-200 transition-all uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 group">

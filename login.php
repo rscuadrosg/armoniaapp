@@ -57,6 +57,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block">Contraseña</label>
                 <input type="password" name="password" required class="w-full p-5 bg-slate-50 border-2 border-transparent rounded-[1.8rem] font-bold outline-none focus:border-blue-500/20 transition-all">
             </div>
+            <div class="text-right">
+                <a href="forgot_password.php" class="text-[10px] font-bold text-blue-500 hover:text-blue-700 uppercase tracking-widest">¿Olvidaste tu contraseña?</a>
+            </div>
             <button type="submit" class="w-full bg-blue-600 text-white font-black py-5 rounded-[1.8rem] shadow-xl hover:bg-blue-700 transition-all uppercase tracking-widest text-[11px] mt-4">Iniciar Sesión</button>
         </form>
     </div>

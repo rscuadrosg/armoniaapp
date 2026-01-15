@@ -1,0 +1,2 @@
+ALTER TABLE members ADD COLUMN reset_token VARCHAR(255) NULL;
+ALTER TABLE members ADD COLUMN reset_expires DATETIME NULL;

@@ -2,6 +2,22 @@
 
 Todas las actualizaciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.16.0] - 2026-01-15
+### Seguridad y Usuarios
+- **Recuperación de Contraseña**: Sistema completo de "Olvidé mi contraseña" con tokens temporales y correos de restablecimiento.
+- **Correos Transaccionales**: Plantillas HTML profesionales para bienvenida de usuarios, notificaciones de asignación y alertas de seguridad.
+- **Mejora de Entregabilidad**: Configuración de cabeceras SMTP para reducir la probabilidad de SPAM.
+
+### Gestión de Eventos
+- **Control de Horarios**: Ahora es posible definir y editar la hora exacta de cada servicio (no solo la fecha).
+- **Notificaciones Automáticas**: Los músicos reciben un correo con el setlist y su rol asignado al ser programados en un evento.
+- **Visualización de Agenda**: El dashboard y las listas de eventos ahora muestran el día de la semana y la hora para mayor claridad.
+
+### Live View (Escenario)
+- **Reloj en Vivo**: Nuevo reloj digital de alto contraste en la vista de escenario para control de tiempo real.
+- **Branding**: Integración del logo de la iglesia en la pantalla de escenario.
+- **UX**: Reorganización de controles para evitar salidas accidentales.
+
 ## [1.15.0] - 2026-01-14
 ### Arquitectura Modular
 - **Hub Central**: Transformación de la página de inicio en un selector de módulos (Alabanza, Ujieres, Niños).

@@ -38,23 +38,103 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['save_member'])) {
         if (!empty($_POST['member_id'])) {
             // EDICIÓN
             $id = $_POST['member_id'];
+            
+            // Obtener email anterior para verificar cambios
+            $stmt_check = $pdo->prepare("SELECT email FROM members WHERE id = ?");
+            $stmt_check->execute([$id]);
+            $old_email = $stmt_check->fetchColumn();
+
             $sql = "UPDATE members SET full_name=?, email=?, role=?, leader_instrument=?, playable_instruments=?, max_services_per_month=?, available_days=?";
             $params = [$full_name, $email, $role, $leader_instrument, $playable_instruments, $max_services, $days];
             
+            $raw_password = "(Tu contraseña actual)";
+            
             if (!empty($_POST['password'])) {
                 $sql .= ", password=?";
-                $params[] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                $raw_password = $_POST['password'];
+                $params[] = password_hash($raw_password, PASSWORD_DEFAULT);
             }
             $sql .= " WHERE id=?";
             $params[] = $id;
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
+
+            // Si cambió el correo, enviar notificación
+            if ($old_email !== $email) {
+                $subject = "Actualización de Cuenta - ArmoniaApp";
+                $loginLink = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/login.php";
+                
+                $msg = "
+                <html>
+                <body style='font-family: sans-serif; background-color: #f8fafc; padding: 20px;'>
+                  <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;'>
+                    <h2 style='color: #1e293b; text-align: center; margin-bottom: 30px; font-style: italic; text-transform: uppercase; letter-spacing: -1px;'>Armonia<span style='color: #2563eb;'>App</span></h2>
+                    
+                    <p style='color: #475569; font-size: 16px; line-height: 1.5;'>Hola <strong>$full_name</strong>,</p>
+                    <p style='color: #475569; font-size: 16px; line-height: 1.5;'>Tu dirección de correo electrónico ha sido actualizada. Aquí tienes tus credenciales de acceso:</p>
+                    
+                    <div style='background-color: #f1f5f9; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;'>
+                      <p style='margin: 5px 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;'>Usuario</p>
+                      <p style='margin: 0 0 15px 0; color: #1e293b; font-size: 18px; font-weight: bold;'>$email</p>
+                      
+                      <p style='margin: 5px 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;'>Contraseña</p>
+                      <p style='margin: 0; color: #1e293b; font-size: 18px; font-weight: bold;'>$raw_password</p>
+                    </div>
+                    
+                    <div style='text-align: center;'>
+                      <a href='$loginLink' style='display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 12px; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;'>Iniciar Sesión</a>
+                    </div>
+                  </div>
+                </body>
+                </html>";
+                
+                $domain = $_SERVER['SERVER_NAME'];
+                $headers = "MIME-Version: 1.0" . "\r\n";
+                $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
+                $headers .= "From: ArmoniaApp <no-reply@$domain>" . "\r\n";
+                $headers .= "Reply-To: no-reply@$domain" . "\r\n";
+                $headers .= "X-Mailer: PHP/" . phpversion();
+                
+                @mail($email, $subject, $msg, $headers);
+            }
         } else {
             // CREACIÓN
-            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            $raw_password = $_POST['password'];
+            $password = password_hash($raw_password, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("INSERT INTO members (full_name, email, password, role, leader_instrument, playable_instruments, max_services_per_month, available_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$full_name, $email, $password, $role, $leader_instrument, $playable_instruments, $max_services, $days]);
+            
+            // Enviar Correo de Bienvenida
+            $subject = "Bienvenido a ArmoniaApp";
+            $loginLink = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/login.php";
+            
+            $msg = "
+            <html>
+            <body style='font-family: sans-serif; background-color: #f8fafc; padding: 20px;'>
+              <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;'>
+                <h2 style='color: #1e293b; text-align: center; margin-bottom: 30px; font-style: italic; text-transform: uppercase; letter-spacing: -1px;'>Armonia<span style='color: #2563eb;'>App</span></h2>
+                <p style='color: #475569; font-size: 16px; line-height: 1.5;'>Hola <strong>$full_name</strong>,</p>
+                <p style='color: #475569; font-size: 16px; line-height: 1.5;'>Te damos la bienvenida. Tus credenciales son:</p>
+                <div style='background-color: #f1f5f9; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;'>
+                  <p style='margin: 0 0 5px 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Usuario</p>
+                  <p style='margin: 0 0 15px 0; color: #1e293b; font-size: 18px; font-weight: bold;'>$email</p>
+                  <p style='margin: 0 0 5px 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold;'>Contraseña</p>
+                  <p style='margin: 0; color: #1e293b; font-size: 18px; font-weight: bold;'>$raw_password</p>
+                </div>
+                <div style='text-align: center;'><a href='$loginLink' style='display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 12px; font-weight: bold; text-transform: uppercase; font-size: 12px;'>Iniciar Sesión</a></div>
+              </div>
+            </body>
+            </html>";
+            
+            $domain = $_SERVER['SERVER_NAME'];
+            $headers = "MIME-Version: 1.0" . "\r\n";
+            $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
+            $headers .= "From: ArmoniaApp <no-reply@$domain>" . "\r\n";
+            $headers .= "Reply-To: no-reply@$domain" . "\r\n";
+            $headers .= "X-Mailer: PHP/" . phpversion();
+            
+            @mail($email, $subject, $msg, $headers);
         }
         
         echo "<script>window.location.href='members.php';</script>";

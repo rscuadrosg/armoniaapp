@@ -30,6 +30,90 @@ if (isset($_POST['add_member'])) {
                                VALUES (?, ?, ?) 
                                ON DUPLICATE KEY UPDATE member_id = VALUES(member_id)");
         $stmt->execute([$event_id, $m_id, $inst]);
+
+        // --- NOTIFICACIÓN POR CORREO ---
+        // 1. Obtener datos del miembro
+        $stmt_m = $pdo->prepare("SELECT full_name, email FROM members WHERE id = ?");
+        $stmt_m->execute([$m_id]);
+        $member = $stmt_m->fetch();
+
+        if ($member && !empty($member['email'])) {
+            // 2. Obtener datos del evento
+            $stmt_e = $pdo->prepare("SELECT description, event_date FROM events WHERE id = ?");
+            $stmt_e->execute([$event_id]);
+            $event_data = $stmt_e->fetch();
+
+            // 3. Obtener canciones
+            $stmt_s = $pdo->prepare("SELECT s.title, s.artist FROM songs s JOIN event_songs es ON s.id = es.song_id WHERE es.event_id = ? ORDER BY es.position ASC");
+            $stmt_s->execute([$event_id]);
+            $songs_list = $stmt_s->fetchAll(PDO::FETCH_ASSOC);
+
+            // 4. Construir lista de canciones (HTML)
+            $songs_html = "";
+            if ($songs_list) {
+                $songs_html .= "<ul style='padding-left: 20px; margin-top: 10px; color: #475569; text-align: left;'>";
+                foreach($songs_list as $s) {
+                    $songs_html .= "<li style='margin-bottom: 5px;'><strong>" . htmlspecialchars($s['title']) . "</strong> <span style='font-size: 12px; color: #94a3b8;'>(" . htmlspecialchars($s['artist']) . ")</span></li>";
+                }
+                $songs_html .= "</ul>";
+            } else {
+                $songs_html = "<p style='color: #94a3b8; font-style: italic; font-size: 12px;'>Repertorio aún no definido.</p>";
+            }
+
+            // 5. Enviar Correo
+            $subject = "Nueva Asignación: " . $event_data['description'];
+            $link = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/view_event_musico.php?id=" . $event_id;
+            $domain = $_SERVER['SERVER_NAME'];
+            
+            $days_es = ['Sun'=>'Dom','Mon'=>'Lun','Tue'=>'Mar','Wed'=>'Mie','Thu'=>'Jue','Fri'=>'Vie','Sat'=>'Sab'];
+            $day_name = $days_es[date('D', strtotime($event_data['event_date']))];
+            $formatted_date = $day_name . " " . date('d/m/Y', strtotime($event_data['event_date'])) . " a las " . date('h:i A', strtotime($event_data['event_date']));
+
+            $msg = "
+            <html>
+            <body style='font-family: sans-serif; background-color: #f8fafc; padding: 20px;'>
+              <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;'>
+                <h2 style='color: #1e293b; text-align: center; margin-bottom: 10px; font-style: italic; text-transform: uppercase; letter-spacing: -1px;'>Armonia<span style='color: #2563eb;'>App</span></h2>
+                <p style='text-align: center; color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px;'>Notificación de Servicio</p>
+                
+                <p style='color: #475569; font-size: 16px; line-height: 1.5;'>Hola <strong>" . htmlspecialchars($member['full_name']) . "</strong>,</p>
+                <p style='color: #475569; font-size: 16px; line-height: 1.5;'>Has sido asignado(a) para servir en el siguiente evento:</p>
+                
+                <div style='background-color: #f1f5f9; border-radius: 12px; padding: 20px; margin: 25px 0;'>
+                  <div style='margin-bottom: 15px;'>
+                    <p style='margin: 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;'>Evento</p>
+                    <p style='margin: 2px 0 0 0; color: #1e293b; font-size: 16px; font-weight: bold;'>" . htmlspecialchars($event_data['description']) . "</p>
+                  </div>
+                  <div style='margin-bottom: 15px;'>
+                    <p style='margin: 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;'>Fecha</p>
+                    <p style='margin: 2px 0 0 0; color: #1e293b; font-size: 16px; font-weight: bold;'>" . $formatted_date . "</p>
+                  </div>
+                  <div>
+                    <p style='margin: 0; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;'>Tu Rol</p>
+                    <p style='margin: 2px 0 0 0; color: #2563eb; font-size: 16px; font-weight: bold; text-transform: uppercase;'>" . htmlspecialchars($inst) . "</p>
+                  </div>
+                </div>
+
+                <div style='border-top: 1px solid #e2e8f0; padding-top: 20px; margin-bottom: 30px;'>
+                    <p style='color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px;'>Repertorio Planificado</p>
+                    $songs_html
+                </div>
+                
+                <div style='text-align: center;'>
+                  <a href='$link' style='display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 12px; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;'>Ver Detalles y Confirmar</a>
+                </div>
+              </div>
+            </body>
+            </html>";
+            
+            $headers = "MIME-Version: 1.0" . "\r\n";
+            $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
+            $headers .= "From: ArmoniaApp <no-reply@$domain>" . "\r\n";
+            $headers .= "Reply-To: no-reply@$domain" . "\r\n";
+            $headers .= "X-Mailer: PHP/" . phpversion();
+            
+            @mail($member['email'], $subject, $msg, $headers);
+        }
     }
     echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
@@ -55,6 +139,21 @@ if (isset($_GET['del_song'])) {
 }
 if (isset($_GET['del_assignment'])) {
     $pdo->prepare("DELETE FROM event_assignments WHERE id = ?")->execute([$_GET['del_assignment']]);
+    echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
+    exit;
+}
+
+// --- ACTUALIZAR DETALLES DEL EVENTO (Título, Fecha, Hora) ---
+if (isset($_POST['update_event_details']) && $isAdmin) {
+    $new_desc = $_POST['description'];
+    $new_date = $_POST['event_date']; // YYYY-MM-DD
+    $new_time = $_POST['event_time']; // HH:MM
+    
+    $full_date = $new_date . ' ' . $new_time . ':00';
+    
+    $stmt = $pdo->prepare("UPDATE events SET description = ?, event_date = ? WHERE id = ?");
+    $stmt->execute([$new_desc, $full_date, $event_id]);
+    
     echo "<script>window.location.href='view_event.php?id=$event_id&msg=updated';</script>";
     exit;
 }
@@ -201,15 +300,22 @@ function is_eligible($member, $role_name) {
         <script>setTimeout(() => document.getElementById('toast').remove(), 3000);</script>
     <?php endif; ?>
 
-    <header class="mb-6 mt-6">
-        <div class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase mb-2 tracking-widest">Panel Administrativo</div>
-        <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none mb-1">
-            <?php echo htmlspecialchars($event['description'] ?? ($event['event_title'] ?? 'Servicio')); ?>
-        </h1>
-        <div class="flex items-center gap-3 mt-1">
-            <p class="text-sm text-slate-400 font-bold uppercase tracking-widest"><?php echo date('d \d\e F, Y', strtotime($event['event_date'])); ?></p>
-            <span class="bg-green-50 text-green-600 text-[9px] font-black px-2 py-0.5 rounded-full border border-green-100 flex items-center gap-1">● Autoguardado</span>
+    <header class="mb-6 mt-6 flex flex-col md:flex-row justify-between items-end gap-4">
+        <div>
+            <div class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-black uppercase mb-2 tracking-widest">Panel Administrativo</div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none mb-1">
+                <?php echo htmlspecialchars($event['description'] ?? ($event['event_title'] ?? 'Servicio')); ?>
+            </h1>
+            <div class="flex items-center gap-3 mt-1">
+                <p class="text-sm text-slate-400 font-bold uppercase tracking-widest"><?php echo date('d \d\e F, Y - h:i A', strtotime($event['event_date'])); ?></p>
+                <span class="bg-green-50 text-green-600 text-[9px] font-black px-2 py-0.5 rounded-full border border-green-100 flex items-center gap-1">● Autoguardado</span>
+            </div>
         </div>
+        <?php if ($isAdmin): ?>
+            <button onclick="document.getElementById('editEventModal').classList.remove('hidden')" class="bg-white border border-slate-200 text-slate-500 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+                ✎ Editar Info
+            </button>
+        <?php endif; ?>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -372,6 +478,37 @@ function is_eligible($member, $role_name) {
             <div class="flex gap-3">
                 <button type="button" onclick="document.getElementById('magicModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-black uppercase text-xs text-slate-400 hover:bg-slate-50">Cancelar</button>
                 <button type="submit" name="auto_generate_setlist" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-200">Generar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Evento -->
+<div id="editEventModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl p-6">
+        <h3 class="text-2xl font-black text-slate-800 uppercase italic mb-2">Editar Servicio</h3>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Modificar detalles generales</p>
+        
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Nombre del Evento</label>
+                <input type="text" name="description" value="<?php echo htmlspecialchars($event['description']); ?>" required class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Fecha</label>
+                    <input type="date" name="event_date" value="<?php echo date('Y-m-d', strtotime($event['event_date'])); ?>" required class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-2 block tracking-widest">Hora</label>
+                    <input type="time" name="event_time" value="<?php echo date('H:i', strtotime($event['event_date'])); ?>" required class="w-full p-3 bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="document.getElementById('editEventModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-black uppercase text-xs text-slate-400 hover:bg-slate-50">Cancelar</button>
+                <button type="submit" name="update_event_details" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-200">Guardar Cambios</button>
             </div>
         </form>
     </div>

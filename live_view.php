@@ -39,6 +39,13 @@ $songs_stmt = $pdo->prepare("
 ");
 $songs_stmt->execute([$event_id]);
 $songs = $songs_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Cargar Configuración (Logo)
+$app_settings = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM app_settings");
+    while($row = $stmt->fetch()) $app_settings[$row['setting_key']] = $row['setting_value'];
+} catch (Exception $e) { }
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -57,8 +64,11 @@ $songs = $songs_stmt->fetchAll(PDO::FETCH_ASSOC);
 <body class="min-h-screen flex flex-col">
 
     <!-- Header Flotante -->
-    <header class="bg-slate-900/90 backdrop-blur-md p-4 sticky top-0 z-50 border-b border-slate-800 flex justify-between items-center">
+    <header class="bg-slate-900/90 backdrop-blur-md p-4 sticky top-0 z-50 border-b border-slate-800 flex justify-between items-center gap-4">
         <div>
+            <?php if(!empty($app_settings['logo_path'])): ?>
+                <img src="uploads/<?php echo $app_settings['logo_path']; ?>" class="h-16 w-auto mb-2 opacity-80">
+            <?php endif; ?>
             <h1 class="text-xl font-black uppercase italic tracking-tighter leading-none text-white">
                 <?php echo htmlspecialchars($event['description']); ?>
             </h1>
@@ -66,9 +76,33 @@ $songs = $songs_stmt->fetchAll(PDO::FETCH_ASSOC);
                 Vista en Vivo • <span id="wakeStatus">Pantalla Activa</span>
             </p>
         </div>
-        <a href="view_event_musico.php?id=<?php echo $event_id; ?>" class="bg-slate-800 text-slate-400 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-700">
-            Salir
-        </a>
+        
+        <div class="flex flex-col items-end gap-3">
+            <a href="view_event_musico.php?id=<?php echo $event_id; ?>" class="bg-red-600 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-700 shrink-0">
+                Salir
+            </a>
+
+            <!-- Reloj en Vivo -->
+            <div class="bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-700 flex flex-col items-center">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hora Actual</span>
+                <div class="flex items-baseline gap-1 md:gap-2">
+                    <div class="text-center">
+                        <div id="clockH" class="text-2xl md:text-3xl font-black text-yellow-400 tracking-tight font-mono tabular-nums leading-none">00</div>
+                        <div class="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">HH</div>
+                    </div>
+                    <div class="text-xl md:text-2xl font-black text-yellow-400/50">:</div>
+                    <div class="text-center">
+                        <div id="clockM" class="text-2xl md:text-3xl font-black text-yellow-400 tracking-tight font-mono tabular-nums leading-none">00</div>
+                        <div class="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">MM</div>
+                    </div>
+                    <div class="text-xl md:text-2xl font-black text-yellow-400/50">:</div>
+                    <div class="text-center">
+                        <div id="clockS" class="text-2xl md:text-3xl font-black text-yellow-400 tracking-tight font-mono tabular-nums leading-none">00</div>
+                        <div class="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">SS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
     <!-- Lista de Canciones -->
@@ -150,6 +184,19 @@ $songs = $songs_stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         });
         requestWakeLock();
+
+        // 1.5 Reloj
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clockH').innerText = h;
+            document.getElementById('clockM').innerText = m;
+            document.getElementById('clockS').innerText = s;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
         // 2. Drag & Drop (Solo si es Admin)
         <?php if($isAdmin): ?>

@@ -1,4 +1,8 @@
 <?php
+// Evitar doble inclusión y errores de headers
+if (defined('HEADER_LOADED')) return;
+define('HEADER_LOADED', true);
+
 // Forzar codificación UTF-8 en el navegador
 header('Content-Type: text/html; charset=utf-8');
 
@@ -27,7 +31,7 @@ if (isset($pdo)) {
 
 // Detectar Módulo Activo
 $current_page = basename($_SERVER['PHP_SELF']);
-$worship_pages = ['worship.php', 'repertorio_lista.php', 'events.php', 'members.php', 'view_event.php', 'view_event_musico.php', 'settings_band.php', 'settings_tags.php', 'generate_schedule.php', 'auto_assign_team.php', 'repertorio_borrar.php', 'add_event.php', 'add_event_songs.php', 'edit_song.php', 'import_songs.php', 'settings_general.php'];
+$worship_pages = ['worship.php', 'repertorio_lista.php', 'events.php', 'members.php', 'view_event.php', 'view_event_musico.php', 'settings_band.php', 'settings_tags.php', 'generate_schedule.php', 'auto_assign_team.php', 'repertorio_borrar.php', 'add_event.php', 'add_event_songs.php', 'edit_song.php', 'import_songs.php', 'settings_general.php', 'dashboard.php'];
 $is_worship_module = in_array($current_page, $worship_pages);
 ?>
 <!DOCTYPE html>
@@ -121,6 +125,10 @@ $is_worship_module = in_array($current_page, $worship_pages);
             </div>
 
             <div class="flex items-center gap-4">
+                <a href="dashboard.php" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-slate-700">
+                    <span>👤</span> <span class="hidden sm:inline">Mi Perfil</span>
+                </a>
+
                 <?php if($isAdmin): ?>
                     <a href="settings_general.php" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-slate-700">
                         <span>⚙️</span> <span class="hidden sm:inline">Configuración</span>
@@ -144,6 +152,7 @@ $is_worship_module = in_array($current_page, $worship_pages);
                 <div class="space-y-6 text-center flex-1">
                     <div>
                         <a href="index.php" class="block text-white text-2xl font-black italic uppercase mb-2">Hub Principal</a>
+                        <a href="dashboard.php" class="block text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">👤 Mi Perfil</a>
                         <a href="worship.php" class="block text-blue-400 text-lg font-bold">Panel de Alabanza</a>
                     </div>
 
